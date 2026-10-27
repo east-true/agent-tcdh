@@ -33,10 +33,10 @@ Project documentation, comments, examples, and application messages use English.
 
 Requires Node.js 24 or newer and npm. Linux, macOS, and Windows verification and shell-specific setup are documented in [platform compatibility](docs/platform-compatibility.md).
 
-The implementation is currently on `feat/registry-discovery` during initial development:
+Clone the repository and start the hub:
 
 ```sh
-git clone --branch feat/registry-discovery https://github.com/east-true/agent-tcdh.git
+git clone https://github.com/east-true/agent-tcdh.git
 cd agent-tcdh
 npm ci
 npm run build

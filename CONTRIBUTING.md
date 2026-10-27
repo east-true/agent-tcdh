@@ -4,17 +4,17 @@ Bug reports, documentation improvements, examples, and pull requests are welcome
 
 ## Development setup
 
-Use Node.js 24 and npm. During initial development, the implementation is on `feat/registry-discovery`:
+Use Node.js 24 and npm:
 
 ```sh
-git clone --branch feat/registry-discovery https://github.com/east-true/agent-tcdh.git
+git clone https://github.com/east-true/agent-tcdh.git
 cd agent-tcdh
 npm ci
 npm run check
 npm run demo
 ```
 
-Create your working branch from the implementation branch you intend to target. Use a lowercase branch name such as `fix/windows-paths` or `feat/search-filter`. Keep each pull request focused on one change and explain the problem, resulting behavior, and validation.
+Create your working branch from `main` and target `main` in your pull request. Keep your branch up to date with `main`, pass all required CI checks, and resolve review conversations before merging. Use a lowercase branch name such as `fix/windows-paths` or `feat/search-filter`. Keep each pull request focused on one change and explain the problem, resulting behavior, and validation.
 
 ## Project boundaries
 
