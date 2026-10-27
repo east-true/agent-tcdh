@@ -1,0 +1,12 @@
+.git
+node_modules
+dist
+coverage
+.agent-tcdh
+*.sqlite
+*.sqlite-shm
+*.sqlite-wal
+*.tgz
+.env
+.env.*
+!.env.example

@@ -1,0 +1,100 @@
+{
+  "startedAt": "2026-10-27T08:17:15.674Z",
+  "discovery": "mcp",
+  "scope": "test adapters backed by real providers",
+  "automaticRetries": 0,
+  "modelInvocations": {
+    "gemini": 1,
+    "jev": 1
+  },
+  "observations": [
+    {
+      "provider": "gemini",
+      "clientVersion": "0.64.0",
+      "requestedModel": "gemini-3.5-flash-lite",
+      "stats": {
+        "models": {
+          "gemini-3.5-flash-lite": {
+            "api": {
+              "totalRequests": 1,
+              "totalErrors": 0,
+              "totalLatencyMs": 2643,
+              "errorsByType": {}
+            },
+            "tokens": {
+              "input": 6483,
+              "prompt": 6483,
+              "candidates": 41,
+              "total": 6721,
+              "cached": 0,
+              "thoughts": 197,
+              "tool": 0
+            },
+            "roles": {
+              "main": {
+                "totalRequests": 1,
+                "totalErrors": 0,
+                "totalLatencyMs": 2643,
+                "tokens": {
+                  "input": 6483,
+                  "prompt": 6483,
+                  "candidates": 41,
+                  "total": 6721,
+                  "cached": 0,
+                  "thoughts": 197,
+                  "tool": 0
+                }
+              }
+            }
+          }
+        },
+        "tools": {
+          "totalCalls": 0,
+          "totalSuccess": 0,
+          "totalFail": 0,
+          "totalDurationMs": 0,
+          "totalDecisions": {
+            "accept": 0,
+            "reject": 0,
+            "modify": 0,
+            "auto_accept": 0
+          },
+          "byName": {}
+        },
+        "files": {
+          "totalLinesAdded": 0,
+          "totalLinesRemoved": 0
+        }
+      },
+      "response": "agent-tcdh 29433a81-d97e-4352-8002-31f0ea2e1637"
+    },
+    {
+      "provider": "typesafe-jev",
+      "requestedModel": "jev-latest",
+      "model": "jev-1.14.0",
+      "answers": {
+        "protocol": {
+          "type": "choice",
+          "choice": "a2a",
+          "confidence": 1,
+          "probabilities": {
+            "mcp": 0,
+            "a2a": 1,
+            "none": 0
+          }
+        }
+      },
+      "usage": {
+        "input_tokens": 373,
+        "output_tokens": 43
+      }
+    }
+  ],
+  "failures": [],
+  "passed": true,
+  "availableJevModels": [
+    "jev-latest",
+    "jev-preview"
+  ],
+  "finishedAt": "2026-10-27T08:17:22.146Z"
+}

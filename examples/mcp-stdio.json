@@ -1,0 +1,26 @@
+{
+  "id": "filesystem",
+  "name": "Filesystem MCP",
+  "description": "Search and read files in a local working directory",
+  "protocol": "mcp",
+  "tags": [
+    "files",
+    "local"
+  ],
+  "capabilities": [
+    {
+      "name": "read_file",
+      "description": "Read files within allowed directories."
+    }
+  ],
+  "connection": {
+    "transport": "stdio",
+    "command": "npx",
+    "args": [
+      "-y",
+      "@modelcontextprotocol/server-filesystem",
+      "/path/to/workspace"
+    ],
+    "envVars": []
+  }
+}

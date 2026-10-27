@@ -1,0 +1,48 @@
+{
+  "checkedAt": "2026-10-27",
+  "sources": [
+    {
+      "key": "copilot_executor_source",
+      "url": "https://github.com/shashikanth-gs/a2a-wrapper/blob/main/a2a-copilot/src/copilot/executor.ts",
+      "blobSha": "a842a2c9ae8a0e7a03a2a6d7fb1677796859fb1e"
+    },
+    {
+      "key": "copilot_server",
+      "url": "https://github.com/shashikanth-gs/a2a-wrapper/blob/main/a2a-copilot/src/server/index.ts",
+      "blobSha": "a47904f0a68225367949b32be6b264faaedae10b"
+    },
+    {
+      "key": "wrapper_card",
+      "url": "https://github.com/shashikanth-gs/a2a-wrapper/blob/main/packages/core/src/server/agent-card.ts",
+      "blobSha": "e4cc0df389a98447e10b133693093cc514f5fcb2"
+    },
+    {
+      "key": "fang_aider",
+      "url": "https://github.com/kariemSeiam/fangai/blob/main/packages/adapters/aider/src/index.ts",
+      "blobSha": "22aff501a4d8d47186f884d0f93075d09a1127d0"
+    },
+    {
+      "key": "aider_parser",
+      "url": "https://github.com/Aider-AI/aider/blob/main/aider/args.py",
+      "blobSha": "5b3fdf07faf39e5db16625414d61c79aa44ac06e"
+    },
+    {
+      "key": "grok_bridge_app",
+      "url": "https://github.com/Rladmsrl/a2a-bridge/blob/main/a2a_bridge/app.py",
+      "blobSha": "bbd074627128923c86687e0c1c46a8b32ea0d5c8"
+    },
+    {
+      "key": "generic_adapter_readme",
+      "url": "https://github.com/hybroai/a2a-adapter/blob/main/README.md",
+      "blobSha": "2f9bb2d6390fc9501beb5ea6db29f445f09e6ca3"
+    }
+  ],
+  "openhandsPr": {
+    "url": "https://github.com/OpenHands/software-agent-sdk/pull/4590",
+    "state": "open",
+    "merged": false,
+    "headSha": "e4fd0134731639482d6502afde3a82f0586fcb23",
+    "baseSha": "c20709fb587f71d38d4af62c4813ff4d2681fa02"
+  },
+  "aiderJsonFlagFound": false
+}

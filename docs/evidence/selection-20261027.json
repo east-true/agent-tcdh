@@ -1,0 +1,213 @@
+{
+  "passed": true,
+  "runs": [
+    {
+      "summary": {
+        "startedAt": "2026-10-27T08:04:38.074Z",
+        "agent": "codex",
+        "clientVersion": "codex-cli 0.164.0",
+        "model": "gpt-6.1-sol",
+        "requestedTargets": 3,
+        "candidateTargets": 10,
+        "decoyTargets": 2,
+        "passed": true,
+        "exitCode": 0,
+        "final": {
+          "results": [
+            {
+              "targetId": "provider-898574a7",
+              "task": "sum_numbers",
+              "protocol": "mcp",
+              "value": 42,
+              "receipt": "f60a83c1-b3dc-4db0-91b3-f2c5cd39133f"
+            },
+            {
+              "targetId": "provider-977cb305",
+              "task": "uppercase_text",
+              "protocol": "a2a",
+              "value": "AGENT DISCOVERY",
+              "receipt": "578ec9d7-0c23-416c-8b82-de3381ed19dc"
+            },
+            {
+              "targetId": "provider-1a940af9",
+              "task": "sort_numbers",
+              "protocol": "mcp",
+              "value": [
+                2,
+                11,
+                19
+              ],
+              "receipt": "02d7bae1-a4b5-4501-9924-a62d58cf560b"
+            }
+          ]
+        },
+        "hubSearchCalls": 1,
+        "hubGetCalls": 3,
+        "executions": [
+          {
+            "targetId": "provider-977cb305",
+            "task": "uppercase_text",
+            "protocol": "a2a",
+            "value": "AGENT DISCOVERY",
+            "receipt": "578ec9d7-0c23-416c-8b82-de3381ed19dc"
+          },
+          {
+            "targetId": "provider-1a940af9",
+            "task": "sort_numbers",
+            "protocol": "mcp",
+            "value": [
+              2,
+              11,
+              19
+            ],
+            "receipt": "02d7bae1-a4b5-4501-9924-a62d58cf560b"
+          },
+          {
+            "targetId": "provider-898574a7",
+            "task": "sum_numbers",
+            "protocol": "mcp",
+            "value": 42,
+            "receipt": "f60a83c1-b3dc-4db0-91b3-f2c5cd39133f"
+          }
+        ],
+        "mcpExecutions": 2,
+        "a2aExecutions": 1,
+        "finishedAt": "2026-10-27T08:05:08.981Z"
+      },
+      "traceAudit": {
+        "unrelatedExecutionAttempts": 0,
+        "executionAttempts": 3,
+        "hubExecutionProxied": false,
+        "getTargetIds": [
+          "provider-898574a7",
+          "provider-1a940af9",
+          "provider-977cb305"
+        ],
+        "allSelectedCardsFetched": true
+      },
+      "events": "selection-3-20261027-events.json"
+    },
+    {
+      "summary": {
+        "startedAt": "2026-10-27T08:07:08.149Z",
+        "agent": "codex",
+        "clientVersion": "codex-cli 0.164.0",
+        "model": "gpt-6.1-sol",
+        "requestedTargets": 5,
+        "candidateTargets": 10,
+        "decoyTargets": 2,
+        "passed": true,
+        "exitCode": 0,
+        "final": {
+          "results": [
+            {
+              "targetId": "provider-0811729d",
+              "task": "sum_numbers",
+              "protocol": "mcp",
+              "value": 42,
+              "receipt": "2bff4d99-d5ac-4bde-8bab-053badd62181"
+            },
+            {
+              "targetId": "provider-d38a1d27",
+              "task": "uppercase_text",
+              "protocol": "a2a",
+              "value": "AGENT DISCOVERY",
+              "receipt": "12f3f476-cb71-4b26-a961-49c531565d32"
+            },
+            {
+              "targetId": "provider-a28a5f10",
+              "task": "sort_numbers",
+              "protocol": "mcp",
+              "value": [
+                2,
+                11,
+                19
+              ],
+              "receipt": "795ccce1-8c7c-4389-b9f3-c3968247500f"
+            },
+            {
+              "targetId": "provider-662fa42f",
+              "task": "count_words",
+              "protocol": "mcp",
+              "value": 5,
+              "receipt": "fdf24047-c55f-4198-910a-aafa43a96095"
+            },
+            {
+              "targetId": "provider-4d809ac8",
+              "task": "unique_values",
+              "protocol": "a2a",
+              "value": [
+                "mcp",
+                "a2a"
+              ],
+              "receipt": "a17a3166-e94b-41ab-9f77-2851a96aee4c"
+            }
+          ]
+        },
+        "hubSearchCalls": 1,
+        "hubGetCalls": 5,
+        "executions": [
+          {
+            "targetId": "provider-0811729d",
+            "task": "sum_numbers",
+            "protocol": "mcp",
+            "value": 42,
+            "receipt": "2bff4d99-d5ac-4bde-8bab-053badd62181"
+          },
+          {
+            "targetId": "provider-d38a1d27",
+            "task": "uppercase_text",
+            "protocol": "a2a",
+            "value": "AGENT DISCOVERY",
+            "receipt": "12f3f476-cb71-4b26-a961-49c531565d32"
+          },
+          {
+            "targetId": "provider-a28a5f10",
+            "task": "sort_numbers",
+            "protocol": "mcp",
+            "value": [
+              2,
+              11,
+              19
+            ],
+            "receipt": "795ccce1-8c7c-4389-b9f3-c3968247500f"
+          },
+          {
+            "targetId": "provider-662fa42f",
+            "task": "count_words",
+            "protocol": "mcp",
+            "value": 5,
+            "receipt": "fdf24047-c55f-4198-910a-aafa43a96095"
+          },
+          {
+            "targetId": "provider-4d809ac8",
+            "task": "unique_values",
+            "protocol": "a2a",
+            "value": [
+              "mcp",
+              "a2a"
+            ],
+            "receipt": "a17a3166-e94b-41ab-9f77-2851a96aee4c"
+          }
+        ],
+        "mcpExecutions": 3,
+        "a2aExecutions": 2,
+        "finishedAt": "2026-10-27T08:07:46.984Z"
+      },
+      "traceAudit": {
+        "unrelatedExecutionAttempts": 0,
+        "executionAttempts": 5,
+        "hubExecutionProxied": false,
+        "getTargetIds": [
+          "provider-d38a1d27",
+          "provider-0811729d",
+          "provider-662fa42f",
+          "provider-a28a5f10",
+          "provider-4d809ac8"
+        ],
+        "allSelectedCardsFetched": true
+      },
+      "events": "selection-5-20261027-events.json"
+    }
+  ]
+}

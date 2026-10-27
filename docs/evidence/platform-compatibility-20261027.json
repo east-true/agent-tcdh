@@ -1,0 +1,124 @@
+{
+  "checkedAt": "2026-10-27T09:03:50.484Z",
+  "passed": true,
+  "repository": "east-true/agent-tcdh",
+  "branch": "feat/registry-discovery",
+  "testedCommit": "ac2c7575e62332ddd7fd771e075a036fe00b8403",
+  "runId": 40477604438,
+  "runUrl": "https://github.com/east-true/agent-tcdh/actions/runs/40477604438",
+  "jobs": [
+    {
+      "jobId": 122099572816,
+      "jobName": "container",
+      "url": "https://github.com/east-true/agent-tcdh/actions/runs/40477604438/job/122099572816",
+      "status": "completed",
+      "conclusion": "success",
+      "runtime": null,
+      "tests": null,
+      "isolatedPackageVerified": false,
+      "nonRoot": true,
+      "healthcheck": true,
+      "volumePersistence": true
+    },
+    {
+      "jobId": 122099573168,
+      "jobName": "node and package (macos-15)",
+      "url": "https://github.com/east-true/agent-tcdh/actions/runs/40477604438/job/122099573168",
+      "status": "completed",
+      "conclusion": "success",
+      "runtime": {
+        "platform": "darwin",
+        "arch": "arm64",
+        "node": "v24.20.0"
+      },
+      "tests": {
+        "total": 118,
+        "passed": 118,
+        "failed": 0
+      },
+      "isolatedPackageVerified": true
+    },
+    {
+      "jobId": 122099573174,
+      "jobName": "node and package (ubuntu-24.04)",
+      "url": "https://github.com/east-true/agent-tcdh/actions/runs/40477604438/job/122099573174",
+      "status": "completed",
+      "conclusion": "success",
+      "runtime": {
+        "platform": "linux",
+        "arch": "x64",
+        "node": "v24.21.0"
+      },
+      "tests": {
+        "total": 118,
+        "passed": 118,
+        "failed": 0
+      },
+      "isolatedPackageVerified": true
+    },
+    {
+      "jobId": 122099573280,
+      "jobName": "node and package (windows-2025)",
+      "url": "https://github.com/east-true/agent-tcdh/actions/runs/40477604438/job/122099573280",
+      "status": "completed",
+      "conclusion": "success",
+      "runtime": {
+        "platform": "win32",
+        "arch": "x64",
+        "node": "v24.22.1"
+      },
+      "tests": {
+        "total": 117,
+        "passed": 117,
+        "failed": 0
+      },
+      "isolatedPackageVerified": true
+    },
+    {
+      "jobId": 122099573366,
+      "jobName": "node and package (macos-15-intel)",
+      "url": "https://github.com/east-true/agent-tcdh/actions/runs/40477604438/job/122099573366",
+      "status": "completed",
+      "conclusion": "success",
+      "runtime": {
+        "platform": "darwin",
+        "arch": "x64",
+        "node": "v24.19.0"
+      },
+      "tests": {
+        "total": 118,
+        "passed": 118,
+        "failed": 0
+      },
+      "isolatedPackageVerified": true
+    }
+  ],
+  "earlierRuns": [
+    {
+      "runId": 40475390506,
+      "commit": "7a060f14156a6149c541d64e602d95a217f52089",
+      "url": "https://github.com/east-true/agent-tcdh/actions/runs/40475390506",
+      "result": "macOS package demos exited without JSON because the entry guard compared a symlink path with its canonical module path."
+    },
+    {
+      "runId": 40477092846,
+      "commit": "521dfd11790a452a467ba76eae25b1ccccbcc172",
+      "url": "https://github.com/east-true/agent-tcdh/actions/runs/40477092846",
+      "result": "Linux, Windows, and Apple Silicon passed; Intel macOS exposed an EPERM error from a duplicate process-group cleanup attempt in a teardown hook."
+    }
+  ],
+  "scope": [
+    "native Node.js 24 typecheck and build",
+    "HTTP, MCP stdio and Streamable HTTP, A2A 1.0 and 0.3",
+    "SQLite persistence, migration, snapshots and concurrency",
+    "isolated production package install and binary execution in paths containing spaces",
+    "local direct-execution demo and symlink/junction entry points",
+    "portable command shims, argument boundaries, Unicode and process cleanup",
+    "Linux non-root container runtime, health and volume persistence"
+  ],
+  "limits": [
+    "The extra POSIX signal shutdown test does not run on Windows; graceful IPC shutdown is verified there.",
+    "No public MCP, paid service operation, or live model was invoked by the CI workflow.",
+    "Results cover these runner OS/architecture combinations and recorded Node versions, not every historical OS or filesystem."
+  ]
+}

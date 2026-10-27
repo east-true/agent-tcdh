@@ -1,0 +1,109 @@
+[
+  {
+    "source": "metadata",
+    "target": "microsoft-learn",
+    "method": "initialize"
+  },
+  {
+    "source": "metadata",
+    "target": "microsoft-learn",
+    "method": "notifications/initialized"
+  },
+  {
+    "source": "metadata",
+    "target": "microsoft-learn",
+    "method": "tools/list"
+  },
+  {
+    "source": "hub",
+    "path": "/api/targets"
+  },
+  {
+    "source": "hub",
+    "path": "/mcp",
+    "method": "initialize"
+  },
+  {
+    "source": "hub",
+    "path": "/mcp",
+    "method": "notifications/initialized"
+  },
+  {
+    "source": "hub",
+    "path": "/mcp"
+  },
+  {
+    "source": "hub",
+    "path": "/mcp",
+    "method": "tools/call",
+    "tool": "search_targets"
+  },
+  {
+    "source": "hub",
+    "path": "/mcp",
+    "method": "tools/call",
+    "tool": "get_target"
+  },
+  {
+    "source": "direct:mcp",
+    "target": "microsoft-learn",
+    "method": "initialize"
+  },
+  {
+    "source": "direct:mcp",
+    "target": "microsoft-learn",
+    "method": "notifications/initialized"
+  },
+  {
+    "source": "direct:mcp",
+    "target": "microsoft-learn",
+    "method": "tools/call",
+    "tool": "microsoft_docs_search"
+  },
+  {
+    "source": "direct:mcp",
+    "target": "microsoft-learn",
+    "method": "tools/call",
+    "tool": "microsoft_docs_fetch"
+  },
+  {
+    "source": "hub",
+    "path": "/.well-known/agent-card.json"
+  },
+  {
+    "source": "hub",
+    "path": "/a2a",
+    "method": "SendMessage"
+  },
+  {
+    "source": "hub",
+    "path": "/a2a",
+    "method": "SendMessage"
+  },
+  {
+    "source": "direct:a2a",
+    "target": "microsoft-learn",
+    "method": "initialize"
+  },
+  {
+    "source": "direct:a2a",
+    "target": "microsoft-learn",
+    "method": "notifications/initialized"
+  },
+  {
+    "source": "direct:a2a",
+    "target": "microsoft-learn",
+    "method": "tools/call",
+    "tool": "microsoft_docs_search"
+  },
+  {
+    "source": "direct:a2a",
+    "target": "microsoft-learn",
+    "method": "tools/call",
+    "tool": "microsoft_docs_fetch"
+  },
+  {
+    "source": "hub",
+    "path": "/api/registry/export"
+  }
+]

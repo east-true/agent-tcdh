@@ -1,0 +1,27 @@
+{
+  "coreVersion": "2.1.1",
+  "a2aSdkVersion": "1.3.0",
+  "productBackendExecuted": false,
+  "results": [
+    {
+      "check": "published-core-legacy-card-import-register-search",
+      "passed": true,
+      "executionsDuringRegistration": 0
+    },
+    {
+      "check": "discovered-endpoint-direct-a2a-legacy-message",
+      "passed": true,
+      "realBackend": false
+    },
+    {
+      "check": "published-core-native-card-import-register",
+      "passed": true,
+      "preservedBinding": false,
+      "preservedProtocolVersion": false
+    },
+    {
+      "check": "non-a2a-api-cli-grpc-not-treated-as-supported-registration",
+      "passed": true
+    }
+  ]
+}

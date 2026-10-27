@@ -1,0 +1,516 @@
+{
+  "format": "agent-tcdh",
+  "version": 1,
+  "exportedAt": "2026-10-27T08:02:57.207Z",
+  "targets": [
+    {
+      "id": "cloudflare-docs",
+      "name": "Cloudflare Docs",
+      "description": "Search Cloudflare documentation and read its Pages migration guide",
+      "tags": [
+        "public-docs",
+        "cloudflare-docs"
+      ],
+      "capabilities": [
+        {
+          "name": "search_cloudflare_documentation",
+          "description": "Search the Cloudflare documentation.\n\n\t\tThis tool should be used to answer any question about Cloudflare products or features, including:\n\t\t- Workers, Pages, R2, Images, Stream, D1, Durable Objects, KV, Workflows, Hyperdrive, Queues\n\t\t- AI Search, Workers AI, Vectorize, AI Gateway, Browser Run\n\t\t- Zero Trust, Access, Tunnel, Gateway, Browser Isolation, WARP, DDOS, Magic Transit, Magic WAN\n\t\t- CDN, Cache, DNS, Zaraz, Argo, Rulesets, Terraform, Account and Billing\n\n\t\tResults are returned as semantically similar chunks to the query.",
+          "inputSchema": {
+            "type": "object",
+            "properties": {
+              "query": {
+                "type": "string"
+              }
+            },
+            "required": [
+              "query"
+            ],
+            "$schema": "https://json-schema.org/draft/2020-12/schema"
+          }
+        },
+        {
+          "name": "migrate_pages_to_workers_guide",
+          "description": "ALWAYS read this guide before migrating Pages projects to Workers.",
+          "inputSchema": {
+            "type": "object",
+            "properties": {},
+            "$schema": "https://json-schema.org/draft/2020-12/schema"
+          }
+        }
+      ],
+      "enabled": true,
+      "protocol": "mcp",
+      "connection": {
+        "transport": "streamable-http",
+        "url": "https://docs.mcp.cloudflare.com/mcp"
+      }
+    },
+    {
+      "id": "context7",
+      "name": "Context7",
+      "description": "Resolve libraries and retrieve current framework documentation",
+      "tags": [
+        "public-docs",
+        "context7"
+      ],
+      "capabilities": [
+        {
+          "name": "resolve-library-id",
+          "description": "Resolves a package/product name to a Context7-compatible library ID and returns matching libraries.\n\nYou MUST call this function before 'Query Documentation' tool to obtain a valid Context7-compatible library ID UNLESS the user explicitly provides a library ID in the format '/org/project' or '/org/project/version' in their query.\n\nEach result includes:\n- Library ID: Context7-compatible identifier (format: /org/project)\n- Name: Library or package name\n- Description: Short summary\n- Code Snippets: Number of available code examples\n- Source Reputation: Authority indicator (High, Medium, Low, or Unknown)\n- Benchmark Score: Quality indicator (100 is the highest score)\n- Versions: List of versions if available. Use one of those versions if the user provides a version in their query. The format of the version is /org/project/version.\n\nFor best results, select libraries based on name match, source reputation, snippet coverage, benchmark score, and relevance to your use case.\n\nSelection Process:\n1. Analyze the query to understand what library/package the user is looking for\n2. Return the most relevant match based on:\n- Name similarity to the query (exact matches prioritized)\n- Description relevance to the query's intent\n- Documentation coverage (prioritize libraries with higher Code Snippet counts)\n- Source reputation (consider libraries with High or Medium reputation more authoritative)\n- Benchmark Score: Quality indicator (100 is the highest score)\n\nResponse Format:\n- Return the selected library ID in a clearly marked section\n- Provide a brief explanation for why this library was chosen\n- If multiple good matches exist, acknowledge this but proceed with the most relevant one\n- If no good matches exist, clearly state this and suggest query refinements\n\nFor ambiguous queries, request clarification before proceeding with a best-guess match.\n\nIMPORTANT: Do not call this tool more than 3 times per question. If you cannot find what you need after 3 calls, use the best result you have.",
+          "inputSchema": {
+            "type": "object",
+            "properties": {
+              "query": {
+                "type": "string",
+                "description": "What to look up in the library's documentation. This is used to rank library results by relevance to what the user is trying to accomplish. The query is sent to the Context7 API for processing. Do not include any sensitive or confidential information such as API keys, passwords, credentials, personal data, or proprietary code in your query."
+              },
+              "libraryName": {
+                "type": "string",
+                "description": "Library name to search for and retrieve a Context7-compatible library ID. Use the official library name with proper punctuation — e.g., 'Next.js' instead of 'nextjs', 'Customer.io' instead of 'customerio', 'Three.js' instead of 'threejs'."
+              }
+            },
+            "required": [
+              "query",
+              "libraryName"
+            ],
+            "$schema": "https://json-schema.org/draft/2020-12/schema"
+          }
+        },
+        {
+          "name": "query-docs",
+          "description": "Retrieves and queries up-to-date documentation and code examples from Context7 for any programming library or framework.\n\nYou must call 'Resolve Context7 Library ID' tool first to obtain the exact Context7-compatible library ID required to use this tool, UNLESS the user explicitly provides a library ID in the format '/org/project' or '/org/project/version' in their query.\n\nDo not call this tool more than 3 times per question.\n\nIf you know the programming language the user is working in, pass it as `language` so the results match their setup.",
+          "inputSchema": {
+            "type": "object",
+            "properties": {
+              "libraryId": {
+                "type": "string",
+                "description": "Exact Context7-compatible library ID (e.g., '/mongodb/docs', '/vercel/next.js', '/supabase/supabase', '/vercel/next.js/v16.2.9') retrieved from 'resolve-library-id' or directly from user query in the format '/org/project' or '/org/project/version'."
+              },
+              "query": {
+                "type": "string",
+                "description": "What to look up in the library's documentation, scoped to a single concept. Be specific and include relevant details, but keep each query to one topic — if the user's question spans multiple distinct concepts, make a separate call per concept instead of combining them, unless the question is about how the concepts interact. Good: 'How to set up authentication with JWT in Express.js' or 'React useEffect cleanup function examples'. Bad (too vague): 'auth' or 'hooks'. Bad (too broad): 'routing and auth and caching in Next.js'. The query is sent to the Context7 API for processing. Do not include any sensitive or confidential information such as API keys, passwords, credentials, personal data, or proprietary code in your query."
+              },
+              "language": {
+                "description": "Programming language the user is writing code in, such as 'Python', 'TypeScript', 'Go', or 'C#'. Ranks code examples in that language first. Leave it out when the language is unknown or does not apply.",
+                "type": "string"
+              }
+            },
+            "required": [
+              "libraryId",
+              "query"
+            ],
+            "$schema": "https://json-schema.org/draft/2020-12/schema"
+          }
+        }
+      ],
+      "enabled": true,
+      "protocol": "mcp",
+      "connection": {
+        "transport": "streamable-http",
+        "url": "https://mcp.context7.com/mcp"
+      }
+    },
+    {
+      "id": "deepwiki",
+      "name": "DeepWiki",
+      "description": "Read public GitHub repository wiki structure and contents",
+      "tags": [
+        "public-docs",
+        "deepwiki"
+      ],
+      "capabilities": [
+        {
+          "name": "ask_wiki_question",
+          "description": "Ask any question about a GitHub repository's codebase and get an AI-powered answer\ngrounded in its DeepWiki.",
+          "inputSchema": {
+            "type": "object",
+            "properties": {
+              "repoName": {
+                "anyOf": [
+                  {
+                    "type": "string"
+                  },
+                  {
+                    "items": {
+                      "type": "string"
+                    },
+                    "type": "array"
+                  }
+                ],
+                "description": "GitHub repository or list of repositories (max 10) in owner/repo format."
+              },
+              "question": {
+                "description": "The question to ask about the repository.",
+                "type": "string"
+              }
+            },
+            "required": [
+              "repoName",
+              "question"
+            ]
+          }
+        },
+        {
+          "name": "read_wiki_contents",
+          "description": "View documentation about a GitHub repository.",
+          "inputSchema": {
+            "type": "object",
+            "properties": {
+              "repoName": {
+                "description": "GitHub repository in owner/repo format (e.g. \"facebook/react\").",
+                "type": "string"
+              }
+            },
+            "required": [
+              "repoName"
+            ]
+          }
+        },
+        {
+          "name": "read_wiki_structure",
+          "description": "Get a list of documentation topics for a GitHub repository.",
+          "inputSchema": {
+            "type": "object",
+            "properties": {
+              "repoName": {
+                "description": "GitHub repository in owner/repo format (e.g. \"facebook/react\").",
+                "type": "string"
+              }
+            },
+            "required": [
+              "repoName"
+            ]
+          }
+        }
+      ],
+      "enabled": true,
+      "protocol": "mcp",
+      "connection": {
+        "transport": "streamable-http",
+        "url": "https://mcp.deepwiki.com/mcp"
+      }
+    },
+    {
+      "id": "microsoft-learn",
+      "name": "Microsoft Learn",
+      "description": "Search and read official Microsoft and Azure documentation",
+      "tags": [
+        "public-docs",
+        "microsoft-learn"
+      ],
+      "capabilities": [
+        {
+          "name": "microsoft_docs_search",
+          "description": "Search official Microsoft/Azure documentation to find the most relevant and trustworthy content for a user's query. This tool returns up to 10 high-quality content chunks (each max 500 tokens), extracted from Microsoft Learn and other official sources. Each result includes the article title, URL, and a self-contained content excerpt optimized for fast retrieval and reasoning. Always use this tool to quickly ground your answers in accurate, first-party Microsoft/Azure knowledge.\n\n## Follow-up Pattern\nTo ensure completeness, use microsoft_docs_fetch when high-value pages are identified by search. The fetch tool complements search by providing the full detail. This is a required step for comprehensive results.",
+          "inputSchema": {
+            "type": "object",
+            "properties": {
+              "query": {
+                "description": "a query or topic about Microsoft/Azure products, services, platforms, developer tools, frameworks, or APIs",
+                "type": "string",
+                "default": null
+              }
+            }
+          }
+        },
+        {
+          "name": "microsoft_code_sample_search",
+          "description": "Search for code snippets and examples in official Microsoft Learn documentation. This tool retrieves relevant code samples from Microsoft documentation pages providing developers with practical implementation examples and best practices for Microsoft/Azure products and services related coding tasks. This tool will help you use the **LATEST OFFICIAL** code snippets to empower coding capabilities.\n\n## When to Use This Tool\n- When you are going to provide sample Microsoft/Azure related code snippets in your answers.\n- When you are **generating any Microsoft/Azure related code**.\n\n## Usage Pattern\nInput a descriptive query, or SDK/class/method name to retrieve related code samples. The optional parameter `language` can help to filter results.\n\nEligible values for `language` parameter include: csharp javascript typescript python powershell azurecli al sql java kusto cpp go rust ruby php",
+          "inputSchema": {
+            "type": "object",
+            "properties": {
+              "query": {
+                "description": "a descriptive query, SDK name, method name or code snippet related to Microsoft/Azure products, services, platforms, developer tools, frameworks, APIs or SDKs",
+                "type": "string"
+              },
+              "language": {
+                "description": "Optional parameter specifying the programming language of code snippets to retrieve. Can significantly improve search quality if provided. Eligible values: csharp javascript typescript python powershell azurecli al sql java kusto cpp go rust ruby php",
+                "type": "string",
+                "default": null
+              }
+            },
+            "required": [
+              "query"
+            ]
+          }
+        },
+        {
+          "name": "microsoft_docs_fetch",
+          "description": "Fetch and convert a Microsoft Learn documentation webpage to markdown format. This tool retrieves the latest complete content of Microsoft documentation webpages including Azure, .NET, Microsoft 365, and other Microsoft technologies.\n\n## When to Use This Tool\n- When search results provide incomplete information or truncated content\n- When you need complete step-by-step procedures or tutorials\n- When you need troubleshooting sections, prerequisites, or detailed explanations\n- When search results reference a specific page that seems highly relevant\n- For comprehensive guides that require full context\n\n## Usage Pattern\nUse this tool AFTER microsoft_docs_search when you identify specific high-value pages that need complete content. The search tool gives you an overview; this tool gives you the complete picture.\n\n## URL Requirements\n- The URL must be a valid HTML documentation webpage from the microsoft.com domain\n- Binary files (PDF, DOCX, images, etc.) are not supported\n\n## Output Format\nmarkdown with headings, code blocks, tables, and links preserved.",
+          "inputSchema": {
+            "type": "object",
+            "properties": {
+              "url": {
+                "description": "URL of the Microsoft documentation page to read",
+                "type": "string"
+              }
+            },
+            "required": [
+              "url"
+            ]
+          }
+        }
+      ],
+      "enabled": true,
+      "protocol": "mcp",
+      "connection": {
+        "transport": "streamable-http",
+        "url": "https://learn.microsoft.com/api/mcp"
+      }
+    },
+    {
+      "id": "openai-docs",
+      "name": "OpenAI Docs",
+      "description": "Search and read official OpenAI developer documentation",
+      "tags": [
+        "public-docs",
+        "openai"
+      ],
+      "capabilities": [
+        {
+          "name": "search_openai_docs",
+          "description": "Search across `platform.openai.com`, `developers.openai.com`, and `learn.chatgpt.com` docs. Use this whenever you are working with the OpenAI API (including the Responses API), OpenAI API SDKs, plugins, ChatGPT, or Codex. Results include URLs—**after `search`, use `fetch_openai_doc`** to read/quote the exact markdown.",
+          "inputSchema": {
+            "type": "object",
+            "properties": {
+              "query": {
+                "type": "string",
+                "minLength": 1
+              },
+              "limit": {
+                "type": "integer",
+                "minimum": 1,
+                "maximum": 50
+              },
+              "cursor": {
+                "type": "string"
+              }
+            },
+            "required": [
+              "query"
+            ],
+            "$schema": "http://json-schema.org/draft-07/schema#"
+          }
+        },
+        {
+          "name": "list_openai_docs",
+          "description": "List or browse pages from `platform.openai.com`, `developers.openai.com`, and `learn.chatgpt.com` that this server crawls (useful when you don’t know the right query yet or you’re paging through results). Use this whenever you are working with the OpenAI API (including the Responses API), OpenAI API SDKs, plugins, ChatGPT, or Codex. Results include URLs—**after `list`, use `fetch_openai_doc`** on a result URL to get the full markdown.",
+          "inputSchema": {
+            "type": "object",
+            "properties": {
+              "limit": {
+                "type": "integer",
+                "minimum": 1,
+                "maximum": 50
+              },
+              "cursor": {
+                "type": "string"
+              }
+            },
+            "$schema": "http://json-schema.org/draft-07/schema#"
+          }
+        },
+        {
+          "name": "fetch_openai_doc",
+          "description": "Fetch the markdown for a specific doc page from `developers.openai.com`, `platform.openai.com`, or `learn.chatgpt.com` so you can quote or summarize exact, up-to-date guidance (schemas, examples, limits, and edge cases). Prefer to **`search_openai_docs` first** (or `list_openai_docs` if you’re browsing) to find the best URL, then `fetch_openai_doc` to pull the exact text; you can pass `anchor` (for example, `#streaming`) to fetch just that section.",
+          "inputSchema": {
+            "type": "object",
+            "properties": {
+              "url": {
+                "type": "string",
+                "minLength": 1
+              },
+              "anchor": {
+                "type": "string"
+              }
+            },
+            "required": [
+              "url"
+            ],
+            "$schema": "http://json-schema.org/draft-07/schema#"
+          }
+        },
+        {
+          "name": "list_api_endpoints",
+          "description": "List all OpenAI API endpoint URLs available in the OpenAPI spec.",
+          "inputSchema": {
+            "type": "object",
+            "properties": {},
+            "$schema": "http://json-schema.org/draft-07/schema#"
+          }
+        },
+        {
+          "name": "get_openapi_spec",
+          "description": "Return the OpenAPI spec for a specific API endpoint URL. Optionally filter code samples by language, or return only code samples.",
+          "inputSchema": {
+            "type": "object",
+            "properties": {
+              "url": {
+                "type": "string",
+                "minLength": 1
+              },
+              "languages": {
+                "type": "array",
+                "items": {
+                  "type": "string",
+                  "minLength": 1
+                }
+              },
+              "codeExamplesOnly": {
+                "type": "boolean"
+              }
+            },
+            "required": [
+              "url"
+            ],
+            "$schema": "http://json-schema.org/draft-07/schema#"
+          }
+        }
+      ],
+      "enabled": true,
+      "protocol": "mcp",
+      "connection": {
+        "transport": "streamable-http",
+        "url": "https://developers.openai.com/mcp"
+      }
+    },
+    {
+      "id": "tosspayments-docs",
+      "name": "Toss Payments Docs",
+      "description": "Search and read official Toss Payments integration documentation",
+      "tags": [
+        "public-docs",
+        "payments"
+      ],
+      "capabilities": [
+        {
+          "name": "get-documents",
+          "description": "토스페이먼츠 연동 문서를 조회합니다. 기본은 v2 이고, 유저가 버전1을 명시할 때만 version 을 \"v1\" 로 넘기세요.\n유저의 질의를 분석하여 적절한 키워드와 카테고리를 추출 후 요청주세요.\n\n\n### 키워드 선택:\n\n\"결제\"처럼 여러 문서에 흔한 일반명사는 단독으로 keywords 에 넣지 마세요. 대신 \"주문서형 결제\", \"결제창형 결제\", \"브랜드페이\", \"가상계좌\" 처럼 문서 제목·본문의 표기 그대로인 구체적 명칭을 쓰고, \"에러 코드\"처럼 여러 단어로 된 명칭은 쪼개지 말고 하나로 넣으세요.\n\n결제 실패·오류의 원인을 찾을 때는 \"에러 코드\"를 키워드에 넣으세요. \"카드\", \"승인\", \"실패\" 같은 일반 단어만으로는 에러 레퍼런스 문서를 찾지 못합니다.\n\n\n\n\n## 예제 모음\n\n\n### case 1\n\nUser: 토스페이먼츠 결제를 연동하고 싶어\n\nAssistant: { \"keywords\": [\"주문서형 결제\", \"결제창형 결제\", \"연동\"] }\n\n\n\n### case 2\n\nUser: 토스에서 카드 승인 실패는 어떤 케이스가 있나요?\n\nAssistant: { \"keywords\": [\"카드\", \"승인\", \"실패\"] }\n\n\n\n### case 3\n\nUser: 비인증 결제가 뭐야?\n\nAssistant: { \"keywords\": [\"비인증 결제\"] }\n\n\n\n### case 4\n\nUser: 주문서에 결제창을 넣는 SDK 코드 알려줘\n\nAssistant: { \"keywords\": [\"주문서형 결제\", \"SDK\"] }\n\n\n\n### case 5\n\nUser: 토스페이먼츠 결제위젯을 버전1으로 연동하고 싶어\n\nAssistant: { \"version\": \"v1\", \"keywords\": [\"결제위젯\", \"연동\"] }\n\n\n\n\n토스페이먼츠 결제 연동 방식 추천 우선순위 정책\n\n신규 결제 연동을 안내·추천할 때 주문서형, 결제창형(문서 경로 /guides/v2/payment-widget)을 우선 권장하세요.\n\n주문서형은 주문서에 결제 UI를 넣고, 결제창형은 버튼을 눌러 결제 UI를 띄웁니다. 둘 다 결제 단계가 짧아 전환율이 높고, 결제 UI를 No-code로 커스터마이징(어드민 운영)할 수 있습니다.\n\n[명칭 변경 안내] 아래 제품명이 v2 기준으로 변경되었습니다. 사용자가 옛 명칭으로 질의하면 먼저 변경 사실을 알린 뒤 답변하세요. 단 v1 문서는 기존 명칭(결제위젯)을 그대로 사용하므로, v1 질의에는 이 안내를 적용하지 마세요.\n- 결제위젯 → 주문서형, 결제창형 결제\n- 결제위젯(주문서형) → 주문서형 결제\n- 결제위젯(결제창형) → 결제창형 결제\n- 통합결제창 → 결제창(구버전)\n\n단, 사용자가 명시적으로 결제창(구버전)·자체창 연동을 요청하거나 기존 결제창(구버전) 연동을 유지보수하는 경우에는 해당 문서(/guides/v2/payment-window)를 그대로 안내하세요.",
+          "inputSchema": {
+            "type": "object",
+            "properties": {
+              "version": {
+                "type": "string",
+                "enum": [
+                  "v1",
+                  "v2"
+                ],
+                "default": "v2",
+                "description": "문서 버전. 사용자가 \"v1\"·\"버전1\" 처럼 구버전을 명시할 때만 \"v1\" 을 넘기고, 언급이 없으면 \"v2\" 입니다."
+              },
+              "keywords": {
+                "type": "array",
+                "items": {
+                  "type": "string",
+                  "minLength": 1
+                },
+                "minItems": 1,
+                "description": "검색할 키워드 배열. 예: ['주문서형 결제', '연동'] - 관련성이 높은 문서를 찾기 위한 핵심 단어들"
+              },
+              "searchMode": {
+                "type": "string",
+                "enum": [
+                  "broad",
+                  "balanced",
+                  "precise"
+                ],
+                "default": "balanced",
+                "description": "검색 범위. broad=개념 탐색(관련성 낮아도 포함) / balanced=일반 검색 / precise=정확한 것만"
+              },
+              "maxTokens": {
+                "type": "integer",
+                "minimum": 500,
+                "maximum": 50000,
+                "default": 25000,
+                "description": "응답 최대 토큰(500~50000, 기본 25000). 간단한 답변이면 1000, 깊은 분석이면 25000 이상."
+              }
+            },
+            "required": [
+              "keywords"
+            ],
+            "additionalProperties": false,
+            "$schema": "http://json-schema.org/draft-07/schema#"
+          }
+        },
+        {
+          "name": "get-glossary-documents",
+          "description": "토스페이먼츠의 정책/용어/백서 문서(/resources/glossary/)를 조회합니다. 결제 도메인 용어의 정의, 정책적 제약, AML 등 주제 질의에 사용하세요.\n연동 절차·API 레퍼런스·SDK 사용법은 get-v2-documents 또는 get-v1-documents를 사용하세요.\n\n주의: 취소·환불·결제 한도·입금 기한처럼 **운영 규칙에 해당하는 \"정책\"은 이 도구에 없습니다.**\n이 색인은 용어 사전입니다. 그런 질의는 get-v2-documents를 사용하세요.\n(예: \"결제수단별 취소 정책 차이\" → get-v2-documents / \"에스크로가 뭐야\" → 이 도구)\n\n### 키워드 선택:\n\n\"결제\"처럼 여러 문서에 흔한 일반명사는 단독으로 keywords 에 넣지 마세요. 대신 \"주문서형 결제\", \"결제창형 결제\", \"브랜드페이\", \"가상계좌\" 처럼 문서 제목·본문의 표기 그대로인 구체적 명칭을 쓰고, \"에러 코드\"처럼 여러 단어로 된 명칭은 쪼개지 말고 하나로 넣으세요.\n\n결제 실패·오류의 원인을 찾을 때는 \"에러 코드\"를 키워드에 넣으세요. \"카드\", \"승인\", \"실패\" 같은 일반 단어만으로는 에러 레퍼런스 문서를 찾지 못합니다.\n\n\n\n\n## 예제 모음\n\n### case 1\nUser: 자금세탁방지(AML)에 대해 알려줘\nAssistant: { \"keywords\": [\"자금세탁방지\", \"AML\"] }\n\n### case 2\nUser: 카드 BIN은 무엇인가요?\nAssistant: { \"keywords\": [\"카드\", \"BIN\"] }\n\n### case 3\nUser: 에스크로가 뭐죠?\nAssistant: { \"keywords\": [\"에스크로\", \"Escrow\"] }",
+          "inputSchema": {
+            "type": "object",
+            "properties": {
+              "version": {
+                "type": "string",
+                "enum": [
+                  "v1",
+                  "v2"
+                ],
+                "default": "v2",
+                "description": "문서 버전. 사용자가 \"v1\"·\"버전1\" 처럼 구버전을 명시할 때만 \"v1\" 을 넘기고, 언급이 없으면 \"v2\" 입니다."
+              },
+              "keywords": {
+                "type": "array",
+                "items": {
+                  "type": "string",
+                  "minLength": 1
+                },
+                "minItems": 1,
+                "description": "검색할 키워드 배열. 예: ['주문서형 결제', '연동'] - 관련성이 높은 문서를 찾기 위한 핵심 단어들"
+              },
+              "searchMode": {
+                "type": "string",
+                "enum": [
+                  "broad",
+                  "balanced",
+                  "precise"
+                ],
+                "default": "balanced",
+                "description": "검색 범위. broad=개념 탐색(관련성 낮아도 포함) / balanced=일반 검색 / precise=정확한 것만"
+              },
+              "maxTokens": {
+                "type": "integer",
+                "minimum": 500,
+                "maximum": 50000,
+                "default": 25000,
+                "description": "응답 최대 토큰(500~50000, 기본 25000). 간단한 답변이면 1000, 깊은 분석이면 25000 이상."
+              }
+            },
+            "required": [
+              "keywords"
+            ],
+            "additionalProperties": false,
+            "$schema": "http://json-schema.org/draft-07/schema#"
+          }
+        },
+        {
+          "name": "document-by-id",
+          "description": "문서의 원본 ID 로 해당 문서의 전체 내용을 조회합니다.",
+          "inputSchema": {
+            "type": "object",
+            "properties": {
+              "id": {
+                "type": "string",
+                "description": "문서별 id 값"
+              }
+            },
+            "required": [
+              "id"
+            ],
+            "additionalProperties": false,
+            "$schema": "http://json-schema.org/draft-07/schema#"
+          }
+        }
+      ],
+      "enabled": true,
+      "protocol": "mcp",
+      "connection": {
+        "transport": "stdio",
+        "command": "npx",
+        "args": [
+          "--yes",
+          "@tosspayments/integration-guide-mcp@0.0.31"
+        ],
+        "envVars": []
+      }
+    }
+  ]
+}

@@ -1,0 +1,479 @@
+[
+  {
+    "source": "metadata",
+    "target": "openai-docs",
+    "method": "initialize"
+  },
+  {
+    "source": "metadata",
+    "target": "openai-docs",
+    "method": "notifications/initialized"
+  },
+  {
+    "source": "metadata",
+    "target": "openai-docs",
+    "method": "tools/list"
+  },
+  {
+    "source": "hub",
+    "path": "/api/targets"
+  },
+  {
+    "source": "metadata",
+    "target": "tosspayments-docs",
+    "method": "initialize"
+  },
+  {
+    "source": "metadata",
+    "target": "tosspayments-docs",
+    "method": "notifications/initialized"
+  },
+  {
+    "source": "metadata",
+    "target": "tosspayments-docs",
+    "method": "tools/list"
+  },
+  {
+    "source": "hub",
+    "path": "/api/targets"
+  },
+  {
+    "source": "metadata",
+    "target": "microsoft-learn",
+    "method": "initialize"
+  },
+  {
+    "source": "metadata",
+    "target": "microsoft-learn",
+    "method": "notifications/initialized"
+  },
+  {
+    "source": "metadata",
+    "target": "microsoft-learn",
+    "method": "tools/list"
+  },
+  {
+    "source": "hub",
+    "path": "/api/targets"
+  },
+  {
+    "source": "metadata",
+    "target": "cloudflare-docs",
+    "method": "initialize"
+  },
+  {
+    "source": "metadata",
+    "target": "cloudflare-docs",
+    "method": "notifications/initialized"
+  },
+  {
+    "source": "metadata",
+    "target": "cloudflare-docs",
+    "method": "tools/list"
+  },
+  {
+    "source": "hub",
+    "path": "/api/targets"
+  },
+  {
+    "source": "metadata",
+    "target": "context7",
+    "method": "initialize"
+  },
+  {
+    "source": "metadata",
+    "target": "context7",
+    "method": "notifications/initialized"
+  },
+  {
+    "source": "metadata",
+    "target": "context7",
+    "method": "tools/list"
+  },
+  {
+    "source": "hub",
+    "path": "/api/targets"
+  },
+  {
+    "source": "metadata",
+    "target": "deepwiki",
+    "method": "initialize"
+  },
+  {
+    "source": "metadata",
+    "target": "deepwiki",
+    "method": "notifications/initialized"
+  },
+  {
+    "source": "metadata",
+    "target": "deepwiki",
+    "method": "tools/list"
+  },
+  {
+    "source": "hub",
+    "path": "/api/targets"
+  },
+  {
+    "source": "hub",
+    "path": "/mcp",
+    "method": "initialize"
+  },
+  {
+    "source": "hub",
+    "path": "/mcp",
+    "method": "notifications/initialized"
+  },
+  {
+    "source": "hub",
+    "path": "/mcp"
+  },
+  {
+    "source": "hub",
+    "path": "/mcp",
+    "method": "tools/call",
+    "tool": "search_targets"
+  },
+  {
+    "source": "hub",
+    "path": "/mcp",
+    "method": "tools/call",
+    "tool": "get_target"
+  },
+  {
+    "source": "direct:mcp",
+    "target": "cloudflare-docs",
+    "method": "initialize"
+  },
+  {
+    "source": "direct:mcp",
+    "target": "cloudflare-docs",
+    "method": "notifications/initialized"
+  },
+  {
+    "source": "direct:mcp",
+    "target": "cloudflare-docs",
+    "method": "tools/call",
+    "tool": "search_cloudflare_documentation"
+  },
+  {
+    "source": "direct:mcp",
+    "target": "cloudflare-docs",
+    "method": "tools/call",
+    "tool": "migrate_pages_to_workers_guide"
+  },
+  {
+    "source": "hub",
+    "path": "/mcp",
+    "method": "tools/call",
+    "tool": "get_target"
+  },
+  {
+    "source": "direct:mcp",
+    "target": "context7",
+    "method": "initialize"
+  },
+  {
+    "source": "direct:mcp",
+    "target": "context7",
+    "method": "notifications/initialized"
+  },
+  {
+    "source": "direct:mcp",
+    "target": "context7",
+    "method": "tools/call",
+    "tool": "resolve-library-id"
+  },
+  {
+    "source": "direct:mcp",
+    "target": "context7",
+    "method": "tools/call",
+    "tool": "query-docs"
+  },
+  {
+    "source": "hub",
+    "path": "/mcp",
+    "method": "tools/call",
+    "tool": "get_target"
+  },
+  {
+    "source": "direct:mcp",
+    "target": "deepwiki",
+    "method": "initialize"
+  },
+  {
+    "source": "direct:mcp",
+    "target": "deepwiki",
+    "method": "notifications/initialized"
+  },
+  {
+    "source": "direct:mcp",
+    "target": "deepwiki",
+    "method": "tools/call",
+    "tool": "read_wiki_structure"
+  },
+  {
+    "source": "direct:mcp",
+    "target": "deepwiki",
+    "method": "tools/call",
+    "tool": "read_wiki_contents"
+  },
+  {
+    "source": "hub",
+    "path": "/mcp",
+    "method": "tools/call",
+    "tool": "get_target"
+  },
+  {
+    "source": "direct:mcp",
+    "target": "microsoft-learn",
+    "method": "initialize"
+  },
+  {
+    "source": "direct:mcp",
+    "target": "microsoft-learn",
+    "method": "notifications/initialized"
+  },
+  {
+    "source": "direct:mcp",
+    "target": "microsoft-learn",
+    "method": "tools/call",
+    "tool": "microsoft_docs_search"
+  },
+  {
+    "source": "direct:mcp",
+    "target": "microsoft-learn",
+    "method": "tools/call",
+    "tool": "microsoft_docs_fetch"
+  },
+  {
+    "source": "hub",
+    "path": "/mcp",
+    "method": "tools/call",
+    "tool": "get_target"
+  },
+  {
+    "source": "direct:mcp",
+    "target": "openai-docs",
+    "method": "initialize"
+  },
+  {
+    "source": "direct:mcp",
+    "target": "openai-docs",
+    "method": "notifications/initialized"
+  },
+  {
+    "source": "direct:mcp",
+    "target": "openai-docs",
+    "method": "tools/call",
+    "tool": "search_openai_docs"
+  },
+  {
+    "source": "direct:mcp",
+    "target": "openai-docs",
+    "method": "tools/call",
+    "tool": "fetch_openai_doc"
+  },
+  {
+    "source": "hub",
+    "path": "/mcp",
+    "method": "tools/call",
+    "tool": "get_target"
+  },
+  {
+    "source": "direct:mcp",
+    "target": "tosspayments-docs",
+    "method": "initialize"
+  },
+  {
+    "source": "direct:mcp",
+    "target": "tosspayments-docs",
+    "method": "notifications/initialized"
+  },
+  {
+    "source": "direct:mcp",
+    "target": "tosspayments-docs",
+    "method": "tools/call",
+    "tool": "get-documents"
+  },
+  {
+    "source": "direct:mcp",
+    "target": "tosspayments-docs",
+    "method": "tools/call",
+    "tool": "document-by-id"
+  },
+  {
+    "source": "hub",
+    "path": "/.well-known/agent-card.json"
+  },
+  {
+    "source": "hub",
+    "path": "/a2a",
+    "method": "SendMessage"
+  },
+  {
+    "source": "hub",
+    "path": "/a2a",
+    "method": "SendMessage"
+  },
+  {
+    "source": "direct:a2a",
+    "target": "cloudflare-docs",
+    "method": "initialize"
+  },
+  {
+    "source": "direct:a2a",
+    "target": "cloudflare-docs",
+    "method": "notifications/initialized"
+  },
+  {
+    "source": "direct:a2a",
+    "target": "cloudflare-docs",
+    "method": "tools/call",
+    "tool": "search_cloudflare_documentation"
+  },
+  {
+    "source": "direct:a2a",
+    "target": "cloudflare-docs",
+    "method": "tools/call",
+    "tool": "migrate_pages_to_workers_guide"
+  },
+  {
+    "source": "hub",
+    "path": "/a2a",
+    "method": "SendMessage"
+  },
+  {
+    "source": "direct:a2a",
+    "target": "context7",
+    "method": "initialize"
+  },
+  {
+    "source": "direct:a2a",
+    "target": "context7",
+    "method": "notifications/initialized"
+  },
+  {
+    "source": "direct:a2a",
+    "target": "context7",
+    "method": "tools/call",
+    "tool": "resolve-library-id"
+  },
+  {
+    "source": "direct:a2a",
+    "target": "context7",
+    "method": "tools/call",
+    "tool": "query-docs"
+  },
+  {
+    "source": "hub",
+    "path": "/a2a",
+    "method": "SendMessage"
+  },
+  {
+    "source": "direct:a2a",
+    "target": "deepwiki",
+    "method": "initialize"
+  },
+  {
+    "source": "direct:a2a",
+    "target": "deepwiki",
+    "method": "notifications/initialized"
+  },
+  {
+    "source": "direct:a2a",
+    "target": "deepwiki",
+    "method": "tools/call",
+    "tool": "read_wiki_structure"
+  },
+  {
+    "source": "direct:a2a",
+    "target": "deepwiki",
+    "method": "tools/call",
+    "tool": "read_wiki_contents"
+  },
+  {
+    "source": "hub",
+    "path": "/a2a",
+    "method": "SendMessage"
+  },
+  {
+    "source": "direct:a2a",
+    "target": "microsoft-learn",
+    "method": "initialize"
+  },
+  {
+    "source": "direct:a2a",
+    "target": "microsoft-learn",
+    "method": "notifications/initialized"
+  },
+  {
+    "source": "direct:a2a",
+    "target": "microsoft-learn",
+    "method": "tools/call",
+    "tool": "microsoft_docs_search"
+  },
+  {
+    "source": "direct:a2a",
+    "target": "microsoft-learn",
+    "method": "tools/call",
+    "tool": "microsoft_docs_fetch"
+  },
+  {
+    "source": "hub",
+    "path": "/a2a",
+    "method": "SendMessage"
+  },
+  {
+    "source": "direct:a2a",
+    "target": "openai-docs",
+    "method": "initialize"
+  },
+  {
+    "source": "direct:a2a",
+    "target": "openai-docs",
+    "method": "notifications/initialized"
+  },
+  {
+    "source": "direct:a2a",
+    "target": "openai-docs",
+    "method": "tools/call",
+    "tool": "search_openai_docs"
+  },
+  {
+    "source": "direct:a2a",
+    "target": "openai-docs",
+    "method": "tools/call",
+    "tool": "fetch_openai_doc"
+  },
+  {
+    "source": "hub",
+    "path": "/a2a",
+    "method": "SendMessage"
+  },
+  {
+    "source": "direct:a2a",
+    "target": "tosspayments-docs",
+    "method": "initialize"
+  },
+  {
+    "source": "direct:a2a",
+    "target": "tosspayments-docs",
+    "method": "notifications/initialized"
+  },
+  {
+    "source": "direct:a2a",
+    "target": "tosspayments-docs",
+    "method": "tools/call",
+    "tool": "get-documents"
+  },
+  {
+    "source": "direct:a2a",
+    "target": "tosspayments-docs",
+    "method": "tools/call",
+    "tool": "document-by-id"
+  },
+  {
+    "source": "hub",
+    "path": "/api/registry/export"
+  }
+]
