@@ -1,5 +1,7 @@
 import crossSpawn from "cross-spawn";
 
+const stoppedTrees = new WeakMap();
+
 /** Resolve native executables and Windows command shims while preserving argument boundaries. */
 export function spawnCommand(command, args, options = {}) {
   return crossSpawn(command, args, { windowsHide: true, ...options });
@@ -19,7 +21,8 @@ export function commandVersion(command, timeout = 10_000) {
 
 /** Stop an owned child process tree using Windows taskkill or its POSIX process group. */
 export function stopProcessTree(child, force = false) {
-  if (!child?.pid) {
+  if (!child?.pid || stoppedTrees.get(child) === true || (stoppedTrees.has(child)
+    && (!force || child.exitCode !== null || child.signalCode !== null))) {
     return;
   }
   if (process.platform === "win32") {
@@ -29,14 +32,17 @@ export function stopProcessTree(child, force = false) {
     if (result.error && result.error.code !== "ESRCH") {
       throw result.error;
     }
+    stoppedTrees.set(child, true);
     return;
   }
   try {
     process.kill(-child.pid, force ? "SIGKILL" : "SIGTERM");
+    stoppedTrees.set(child, force);
   } catch (error) {
     if (error.code !== "ESRCH") {
       throw error;
     }
+    stoppedTrees.set(child, true);
   }
 }
 

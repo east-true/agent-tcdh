@@ -38,7 +38,7 @@ test("command deadlines terminate an owned process instead of waiting indefinite
   await assert.rejects(runCommand(process.execPath, ["-e", "setInterval(() => {}, 1000)"], { timeout: 200 }), /timed out/);
 });
 
-test("owned process tree cleanup also closes a descendant listener", async (t) => {
+test("owned process tree cleanup is idempotent and closes a descendant listener", async (t) => {
   const descendant = `const http = require("node:http"); const server = http.createServer((req,res) => res.end("ok")); server.listen(0,"127.0.0.1",() => console.log(JSON.stringify({port:server.address().port})));`;
   const parent = `const {spawn} = require("node:child_process"); const child=spawn(process.execPath,["-e",${JSON.stringify(descendant)}],{stdio:["ignore","pipe","inherit"]}); child.stdout.pipe(process.stdout); setInterval(() => {},1000);`;
   const child = spawnCommand(process.execPath, ["-e", parent], {

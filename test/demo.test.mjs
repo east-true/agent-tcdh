@@ -3,6 +3,7 @@ import { execFile, spawn } from "node:child_process";
 import { once } from "node:events";
 import { readFile, symlink, writeFile } from "node:fs/promises";
 import { dirname, join, resolve } from "node:path";
+import { pathToFileURL } from "node:url";
 import { createInterface } from "node:readline";
 import { promisify } from "node:util";
 import test from "node:test";
@@ -12,6 +13,13 @@ import { StdioClientTransport } from "@modelcontextprotocol/sdk/client/stdio.js"
 
 const execute = promisify(execFile);
 const entry = resolve("examples/local-demo.mjs");
+
+test("demo modules can be imported when an eval program supplies a non-file argument", async () => {
+  const modules = [entry, resolve("examples/demo-targets.mjs")].map((path) => pathToFileURL(path).href);
+  const script = "for (const url of " + JSON.stringify(modules) + ") await import(url); console.log('loaded');";
+  const { stdout } = await execute(process.execPath, ["--input-type=module", "--eval", script, "--", "not-a-script-path"], { timeout: 10_000 });
+  assert.equal(stdout.trim(), "loaded");
+});
 
 test("demo entry points execute through symlinked directories and Windows junctions", async (t) => {
   const directory = await temporaryDirectory(t);
