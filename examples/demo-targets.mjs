@@ -1,5 +1,5 @@
 import { randomUUID } from "node:crypto";
-import { resolve } from "node:path";
+import { realpathSync } from "node:fs";
 import { pathToFileURL } from "node:url";
 import Fastify from "fastify";
 import { z } from "zod";
@@ -95,7 +95,7 @@ export async function createDemoTargets() {
   }
 }
 
-if (process.argv[1] && import.meta.url === pathToFileURL(resolve(process.argv[1])).href) {
+if (process.argv[1] && import.meta.url === pathToFileURL(realpathSync(process.argv[1])).href) {
   if (process.argv.slice(2).join(" ") !== "--stdio") {
     throw new Error("Run the local MCP target with --stdio. Use npm run demo for the complete example.");
   }

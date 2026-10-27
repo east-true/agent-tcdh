@@ -1,15 +1,34 @@
 import assert from "node:assert/strict";
 import { execFile, spawn } from "node:child_process";
 import { once } from "node:events";
-import { readFile, writeFile } from "node:fs/promises";
-import { join, resolve } from "node:path";
+import { readFile, symlink, writeFile } from "node:fs/promises";
+import { dirname, join, resolve } from "node:path";
 import { createInterface } from "node:readline";
 import { promisify } from "node:util";
 import test from "node:test";
 import { temporaryDirectory } from "./helpers.mjs";
+import { Client } from "@modelcontextprotocol/sdk/client/index.js";
+import { StdioClientTransport } from "@modelcontextprotocol/sdk/client/stdio.js";
 
 const execute = promisify(execFile);
 const entry = resolve("examples/local-demo.mjs");
+
+test("demo entry points execute through symlinked directories and Windows junctions", async (t) => {
+  const directory = await temporaryDirectory(t);
+  const linked = join(directory, "linked examples");
+  await symlink(dirname(entry), linked, process.platform === "win32" ? "junction" : "dir");
+  const { stdout } = await execute(process.execPath, [join(linked, "local-demo.mjs")], { timeout: 20_000 });
+  assert.equal(JSON.parse(stdout).executions.length, 3);
+  const client = new Client({ name: "linked-stdio-verifier", version: "0.1.0" });
+  try {
+    await client.connect(new StdioClientTransport({ command: process.execPath,
+      args: [join(linked, "demo-targets.mjs"), "--stdio"], stderr: "pipe" }), { timeout: 10_000 });
+    const result = await client.callTool({ name: "echo", arguments: { text: "linked execution" } });
+    assert.equal(JSON.parse(result.content[0].text).text, "linked execution");
+  } finally {
+    await client.close();
+  }
+});
 
 for (const discovery of ["mcp", "a2a"]) {
   test("the local demo uses " + discovery + " discovery to call three targets directly without using personal configuration", async (t) => {
