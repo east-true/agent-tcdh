@@ -50,6 +50,20 @@
     "examples",
     "docs",
     "README.md",
-    "LICENSE"
+    "LICENSE",
+    "CONTRIBUTING.md",
+    "SECURITY.md"
+  ],
+  "homepage": "https://github.com/east-true/agent-tcdh#readme",
+  "bugs": {
+    "url": "https://github.com/east-true/agent-tcdh/issues"
+  },
+  "keywords": [
+    "agents",
+    "mcp",
+    "a2a",
+    "discovery",
+    "registry",
+    "typescript"
   ]
 }

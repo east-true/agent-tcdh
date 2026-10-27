@@ -1,0 +1,44 @@
+name: Bug report
+description: Report a reproducible problem with AgentTCDH.
+title: "fix: "
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Use English and remove credentials, private URLs, and personal data from your report.
+        For vulnerabilities, follow SECURITY.md instead of posting technical details here.
+  - type: input
+    id: version
+    attributes:
+      label: Source commit or version
+      description: Include the commit SHA or branch you tested.
+    validations:
+      required: true
+  - type: input
+    id: environment
+    attributes:
+      label: Environment
+      description: Operating system, architecture, Node version, and client version if relevant.
+      placeholder: Windows x64, Node.js 24.x, Codex CLI version
+    validations:
+      required: true
+  - type: textarea
+    id: reproduce
+    attributes:
+      label: Steps to reproduce
+      description: Provide minimal commands or redacted configuration using local fixtures where possible.
+    validations:
+      required: true
+  - type: textarea
+    id: expected
+    attributes:
+      label: Expected behavior
+    validations:
+      required: true
+  - type: textarea
+    id: actual
+    attributes:
+      label: Actual behavior and relevant logs
+      description: Include exit codes or protocol errors. Remove tokens and sensitive data.
+    validations:
+      required: true

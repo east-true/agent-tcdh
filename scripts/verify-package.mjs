@@ -39,7 +39,7 @@ try {
   const [manifest] = manifests;
   assert.equal(manifest.name, "agent-tcdh");
   const files = new Set(manifest.files.map((entry) => entry.path));
-  for (const required of ["dist/index.js", "dist/app.js", "dist/a2a-http.js", "dist/targets/check.js", "docs/agent-compatibility.md", "docs/agent-verification.md", "examples/a2a.json", "README.md", "LICENSE"]) {
+  for (const required of ["dist/index.js", "dist/app.js", "dist/a2a-http.js", "dist/targets/check.js", "docs/agent-compatibility.md", "docs/agent-verification.md", "examples/a2a.json", "README.md", "LICENSE", "CONTRIBUTING.md", "SECURITY.md"]) {
     assert.ok(files.has(required), "Required package file is missing: " + required);
   }
   for (const required of ["examples/local-demo.mjs", "examples/demo-targets.mjs", "docs/local-demo.md", "examples/public-docs-registry.json", "docs/public-mcp-verification.md", "docs/selection-verification.md", "docs/model-target-verification.md", "docs/platform-compatibility.md"]) {

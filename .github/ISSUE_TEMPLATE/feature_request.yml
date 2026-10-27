@@ -1,0 +1,23 @@
+name: Feature request
+description: Propose a change to capability registration or discovery.
+title: "feat: "
+body:
+  - type: textarea
+    id: problem
+    attributes:
+      label: Problem or use case
+      description: Describe what you are trying to do and what the current behavior prevents.
+    validations:
+      required: true
+  - type: textarea
+    id: proposal
+    attributes:
+      label: Proposed behavior
+      description: Explain the desired behavior and which part belongs to the hub, consumer, or target.
+    validations:
+      required: true
+  - type: textarea
+    id: alternatives
+    attributes:
+      label: Alternatives and compatibility considerations
+      description: Include affected protocols, clients, operating systems, or existing registrations where relevant.

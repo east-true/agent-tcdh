@@ -2,6 +2,8 @@
 
 **Agent & Tool Capability Discovery Hub**
 
+An open-source TypeScript registry for MCP servers and A2A agents, licensed under [Apache-2.0](LICENSE).
+
 Register MCP servers and A2A agents in one place. Agents discover capabilities and connection details from the hub, then connect directly to the selected target.
 
 ```text
@@ -31,7 +33,11 @@ Project documentation, comments, examples, and application messages use English.
 
 Requires Node.js 24 or newer and npm. Linux, macOS, and Windows verification and shell-specific setup are documented in [platform compatibility](docs/platform-compatibility.md).
 
+The implementation is currently on `feat/registry-discovery` during initial development:
+
 ```sh
+git clone --branch feat/registry-discovery https://github.com/east-true/agent-tcdh.git
+cd agent-tcdh
 npm ci
 npm run build
 npm start
@@ -382,6 +388,12 @@ npm run test:agents -- --agent opencode --connection-only
 
 These use temporary settings without changing personal configuration. The model must support tool calls and be available to the current account. Provider authentication, availability, and quota failures stop the run without switching models. See [the verification record](docs/agent-verification.md).
 
+## Contributing and support
+
+Bug reports, feature requests, documentation improvements, and pull requests are welcome. Start with [CONTRIBUTING.md](CONTRIBUTING.md), use the [issue forms](https://github.com/east-true/agent-tcdh/issues/new/choose), and follow [SECURITY.md](SECURITY.md) for vulnerability reporting.
+
+Source development and local package verification are available from this repository. The `private: true` field in `package.json` prevents accidental npm publication; it does not change the public repository or source license. See [npm's private-field documentation](https://docs.npmjs.com/cli/v11/configuring-npm/package-json/#private).
+
 ## License
 
-Apache-2.0
+[Apache-2.0](LICENSE)
