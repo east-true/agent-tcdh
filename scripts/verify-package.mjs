@@ -9,7 +9,7 @@ import { fileURLToPath } from "node:url";
 import { parseArgs } from "node:util";
 import { availablePort, runCommand, verifyRuntime, waitForHub } from "./smoke-runtime.mjs";
 
-const { values } = parseArgs({ options: { offline: { type: "boolean", default: false } } });
+const { values } = parseArgs({ options: { offline: { type: "boolean", default: false }, tarball: { type: "string" } } });
 const project = resolve(dirname(fileURLToPath(import.meta.url)), "..");
 const directory = await mkdtemp(join(tmpdir(), "agent-tcdh package-"));
 let child;
@@ -32,14 +32,21 @@ async function stopServer() {
 
 try {
   // 1. Verify required files and documentation in the built package.
-  const packed = await runCommand("npm", ["pack", "--ignore-scripts", "--json", "--pack-destination", directory], { cwd: project });
+  let tarball = values.tarball ? resolve(values.tarball) : undefined;
+  if (!tarball) {
+    const packed = await runCommand("npm", ["pack", "--ignore-scripts", "--json", "--pack-destination", directory], { cwd: project });
+    const output = JSON.parse(packed.stdout);
+    const [manifest] = Array.isArray(output) ? output : Object.values(output);
+    tarball = join(directory, manifest.filename);
+  }
+  const packed = await runCommand("npm", ["pack", tarball, "--dry-run", "--ignore-scripts", "--json"], { cwd: directory });
   const output = JSON.parse(packed.stdout);
   const manifests = Array.isArray(output) ? output : Object.values(output);
   assert.equal(manifests.length, 1, "Exactly one package must be inspected.");
   const [manifest] = manifests;
   assert.equal(manifest.name, "agent-tcdh");
   const files = new Set(manifest.files.map((entry) => entry.path));
-  for (const required of ["dist/index.js", "dist/app.js", "dist/a2a-http.js", "dist/targets/check.js", "docs/agent-compatibility.md", "docs/agent-verification.md", "examples/a2a.json", "README.md", "LICENSE", "CONTRIBUTING.md", "SECURITY.md"]) {
+  for (const required of ["dist/index.js", "dist/app.js", "dist/a2a-http.js", "dist/targets/check.js", "docs/agent-compatibility.md", "docs/agent-verification.md", "examples/a2a.json", "README.md", "LICENSE", "CONTRIBUTING.md", "SECURITY.md", "CHANGELOG.md"]) {
     assert.ok(files.has(required), "Required package file is missing: " + required);
   }
   for (const required of ["examples/local-demo.mjs", "examples/demo-targets.mjs", "docs/local-demo.md", "examples/public-docs-registry.json", "docs/public-mcp-verification.md", "docs/selection-verification.md", "docs/model-target-verification.md", "docs/platform-compatibility.md", "docs/reference.md"]) {
@@ -51,7 +58,7 @@ try {
   const installation = join(directory, "consumer");
   await mkdir(installation);
   await runCommand("npm", ["install", "--prefix", installation, "--omit=dev", "--ignore-scripts", "--no-audit", "--no-fund",
-    "--package-lock=false", ...(values.offline ? ["--offline"] : []), join(directory, manifest.filename)], { cwd: installation });
+    "--package-lock=false", ...(values.offline ? ["--offline"] : []), tarball], { cwd: installation });
   const installed = join(installation, "node_modules", "agent-tcdh");
   const metadata = JSON.parse(await readFile(join(installed, "package.json"), "utf8"));
   const executable = process.platform === "win32" ? process.execPath : join(installation, "node_modules", ".bin", "agent-tcdh");

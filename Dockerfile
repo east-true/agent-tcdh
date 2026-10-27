@@ -18,7 +18,7 @@ ENV NODE_ENV=production \
 RUN mkdir -p /data && chown node:node /data
 COPY --from=production-dependencies --chown=node:node /app/node_modules ./node_modules
 COPY --from=build --chown=node:node /app/dist ./dist
-COPY --chown=node:node package.json README.md LICENSE ./
+COPY --chown=node:node package.json README.md LICENSE CONTRIBUTING.md SECURITY.md CHANGELOG.md ./
 COPY --chown=node:node examples ./examples
 COPY --chown=node:node docs ./docs
 USER node

@@ -42,6 +42,15 @@ npm ci
 npm run demo
 ```
 
+For a published release, run the CLI without a source checkout:
+
+```sh
+npx --yes agent-tcdh@0.1.0 --help
+npx --yes agent-tcdh@0.1.0 serve
+```
+
+The [v0.1.0 release](https://github.com/east-true/agent-tcdh/releases/tag/v0.1.0) also provides a built tarball, checksums, and installation instructions. Source commands below use the repository checkout; an installed CLI uses `agent-tcdh` in place of `npm run cli --`.
+
 The demo starts an isolated hub, registers three local targets, discovers them, and calls HTTP MCP, stdio MCP, and A2A targets directly. It checks execution receipts and cleans up. No account, API key, external service, or model is needed.
 
 ```sh
@@ -164,6 +173,7 @@ Real-agent/model checks are also opt-in and can consume model usage. See [verifi
 - [Local demo](docs/local-demo.md)
 - [MCP/A2A agent registration compatibility](docs/agent-compatibility.md)
 - [Actual-agent verification](docs/agent-verification.md)
+- [Changelog](CHANGELOG.md) and [release process](docs/releasing.md)
 - [Contributing](CONTRIBUTING.md) and [security policy](SECURITY.md)
 
 Project documentation, comments, and application messages use English. Original provider metadata and intentional Unicode fixtures retain their original text.

@@ -154,3 +154,6 @@ vite.config.ts.timestamp-*
 *.sqlite-shm
 *.sqlite-wal
 .agent-tcdh-export-*/
+
+# Release artifacts
+/release/

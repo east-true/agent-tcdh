@@ -1,0 +1,63 @@
+name: release
+
+on:
+  push:
+    tags: ['v*']
+  workflow_dispatch:
+    inputs:
+      tag:
+        description: Existing stable version tag, such as v0.1.0
+        type: string
+        required: true
+
+permissions:
+  contents: read
+
+concurrency:
+  group: release-${{ github.event.inputs.tag || github.ref_name }}
+  cancel-in-progress: false
+
+jobs:
+  verify:
+    uses: ./.github/workflows/ci.yml
+    with:
+      ref: ${{ github.event.inputs.tag || github.ref }}
+
+  publish:
+    needs: verify
+    runs-on: ubuntu-24.04
+    timeout-minutes: 15
+    permissions:
+      contents: write
+    env:
+      RELEASE_TAG: ${{ github.event.inputs.tag || github.ref_name }}
+      GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      GH_REPO: ${{ github.repository }}
+    steps:
+      - name: Check out release source
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # Verified v7 commit
+        with:
+          ref: ${{ github.event.inputs.tag || github.ref }}
+          fetch-depth: 0
+          persist-credentials: false
+      - name: Require a matching version tag on main history
+        run: |
+          node --input-type=module -e 'import { readFileSync } from "node:fs"; import { releaseIdentity } from "./scripts/release-utils.mjs"; releaseIdentity(JSON.parse(readFileSync("package.json")), process.env.RELEASE_TAG, process.env.GITHUB_SHA);'
+          test "$(git rev-parse "refs/tags/$RELEASE_TAG^{commit}")" = "$(git rev-parse HEAD)"
+          git merge-base --is-ancestor HEAD origin/main
+      - name: Set up Node.js
+        uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # Verified v7 commit
+        with:
+          node-version: '24'
+          package-manager-cache: false
+      - name: Install locked verification dependencies
+        run: npm ci --ignore-scripts --no-audit --no-fund
+      - name: Prepare and verify the exact release package
+        run: |
+          npm run release:prepare -- --tag "$RELEASE_TAG"
+          npm run release:verify -- --tag "$RELEASE_TAG"
+      - name: Publish GitHub release with installable assets
+        run: |
+          gh release create "$RELEASE_TAG" --verify-tag --draft --title "AgentTCDH $RELEASE_TAG" --notes-file "docs/releases/$RELEASE_TAG.md"
+          gh release upload "$RELEASE_TAG" release/*.tgz release/SHA256SUMS release/release.json
+          gh release edit "$RELEASE_TAG" --draft=false --latest

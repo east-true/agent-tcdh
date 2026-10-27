@@ -1,0 +1,57 @@
+name: publish npm
+
+on:
+  workflow_dispatch:
+    inputs:
+      tag:
+        description: Published GitHub release tag, such as v0.1.0
+        type: string
+        required: true
+
+permissions:
+  contents: read
+
+concurrency:
+  group: npm-${{ github.event.inputs.tag }}
+  cancel-in-progress: false
+
+jobs:
+  publish:
+    if: github.ref == 'refs/heads/main'
+    runs-on: ubuntu-24.04
+    timeout-minutes: 15
+    permissions:
+      contents: read
+      id-token: write
+    env:
+      RELEASE_TAG: ${{ github.event.inputs.tag }}
+      GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      GH_REPO: ${{ github.repository }}
+    steps:
+      - name: Check out release source
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # Verified v7 commit
+        with:
+          ref: ${{ github.event.inputs.tag }}
+          fetch-depth: 0
+          persist-credentials: false
+      - name: Set up Node.js for trusted publishing
+        uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # Verified v7 commit
+        with:
+          node-version: '24'
+          registry-url: https://registry.npmjs.org/
+          package-manager-cache: false
+      - name: Require a matching stable tag on main history
+        run: |
+          node --input-type=module -e 'import { readFileSync } from "node:fs"; import { releaseIdentity } from "./scripts/release-utils.mjs"; releaseIdentity(JSON.parse(readFileSync("package.json")), process.env.RELEASE_TAG, process.env.GITHUB_SHA);'
+          test "$(git rev-parse "refs/tags/$RELEASE_TAG^{commit}")" = "$(git rev-parse HEAD)"
+          git merge-base --is-ancestor HEAD origin/main
+      - name: Download published release assets
+        run: |
+          test "$(gh release view "$RELEASE_TAG" --json isDraft --jq .isDraft)" = false
+          gh release download "$RELEASE_TAG" --dir release --pattern '*.tgz' --pattern SHA256SUMS --pattern release.json
+      - name: Install verification dependencies
+        run: npm ci --ignore-scripts --no-audit --no-fund
+      - name: Verify downloaded package and installable runtime
+        run: npm run release:verify -- --tag "$RELEASE_TAG"
+      - name: Publish the verified tarball using npm OIDC
+        run: npm publish release/*.tgz --access public --ignore-scripts

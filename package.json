@@ -1,7 +1,6 @@
 {
   "name": "agent-tcdh",
   "version": "0.1.0",
-  "private": true,
   "description": "Agent & Tool Capability Discovery Hub",
   "type": "module",
   "license": "Apache-2.0",
@@ -23,7 +22,9 @@
     "test:container": "node scripts/verify-container.mjs",
     "prepack": "npm run build",
     "test:selection": "npm run build && node scripts/verify-selection.mjs",
-    "test:model-targets": "npm run build && node scripts/verify-model-targets.mjs"
+    "test:model-targets": "npm run build && node scripts/verify-model-targets.mjs",
+    "release:prepare": "node scripts/prepare-release.mjs",
+    "release:verify": "node scripts/verify-release.mjs"
   },
   "repository": {
     "type": "git",
@@ -52,7 +53,8 @@
     "README.md",
     "LICENSE",
     "CONTRIBUTING.md",
-    "SECURITY.md"
+    "SECURITY.md",
+    "CHANGELOG.md"
   ],
   "homepage": "https://github.com/east-true/agent-tcdh#readme",
   "bugs": {
@@ -65,5 +67,9 @@
     "discovery",
     "registry",
     "typescript"
-  ]
+  ],
+  "publishConfig": {
+    "access": "public",
+    "registry": "https://registry.npmjs.org/"
+  }
 }
