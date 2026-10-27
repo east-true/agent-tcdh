@@ -1,0 +1,55 @@
+{
+  "name": "agent-tcdh",
+  "version": "0.1.0",
+  "private": true,
+  "description": "Agent & Tool Capability Discovery Hub",
+  "type": "module",
+  "license": "Apache-2.0",
+  "engines": {
+    "node": ">=24"
+  },
+  "scripts": {
+    "dev": "tsx watch src/index.ts",
+    "demo": "npm run build && node examples/local-demo.mjs",
+    "build": "tsc -p tsconfig.json",
+    "start": "node dist/index.js",
+    "typecheck": "tsc --noEmit -p tsconfig.json",
+    "check": "npm run typecheck && npm test",
+    "cli": "tsx src/index.ts",
+    "test": "npm run build && node --test \"test/*.test.mjs\"",
+    "test:agents": "npm run build && node scripts/verify-agent.mjs",
+    "test:public-mcp": "npm run build && node scripts/verify-public-mcp.mjs",
+    "test:package": "npm run build && node scripts/verify-package.mjs",
+    "test:container": "node scripts/verify-container.mjs",
+    "prepack": "npm run build",
+    "test:selection": "npm run build && node scripts/verify-selection.mjs",
+    "test:model-targets": "npm run build && node scripts/verify-model-targets.mjs"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/east-true/agent-tcdh.git"
+  },
+  "dependencies": {
+    "@a2a-js/sdk": "^1.3.0",
+    "@modelcontextprotocol/sdk": "^1.32.2",
+    "fastify": "^5.12.7",
+    "zod": "^4.6.7"
+  },
+  "devDependencies": {
+    "@types/node": "^24.19.2",
+    "ajv": "^8.20.0",
+    "tsx": "^4.23.15",
+    "typescript": "^7.0.2",
+    "cross-spawn": "^7.0.6"
+  },
+  "bin": {
+    "agent-tcdh": "dist/index.js"
+  },
+  "files": [
+    "dist",
+    "examples",
+    "docs",
+    "README.md",
+    "LICENSE"
+  ]
+}

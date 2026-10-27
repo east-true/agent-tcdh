@@ -1,0 +1,19 @@
+{
+  "model": "jev-1.14.0",
+  "answers": {
+    "protocol": {
+      "type": "choice",
+      "choice": "a2a",
+      "confidence": 1,
+      "probabilities": {
+        "mcp": 0,
+        "a2a": 1,
+        "none": 0
+      }
+    }
+  },
+  "usage": {
+    "input_tokens": 373,
+    "output_tokens": 43
+  }
+}

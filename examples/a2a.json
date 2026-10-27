@@ -1,0 +1,28 @@
+{
+  "id": "research-agent",
+  "name": "Research Agent",
+  "description": "Research topics and organize sources",
+  "protocol": "a2a",
+  "tags": [
+    "research"
+  ],
+  "capabilities": [
+    {
+      "name": "research",
+      "description": "Research a topic and organize its supporting sources."
+    }
+  ],
+  "connection": {
+    "transport": "http",
+    "url": "https://agent.example.com",
+    "agentCardUrl": "https://agent.example.com/.well-known/agent-card.json",
+    "protocolBinding": "JSONRPC",
+    "protocolVersion": "1.0",
+    "auth": {
+      "type": "bearer",
+      "envVars": [
+        "RESEARCH_AGENT_TOKEN"
+      ]
+    }
+  }
+}

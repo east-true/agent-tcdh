@@ -1,0 +1,20 @@
+{
+  "id": "docs",
+  "name": "Documentation MCP",
+  "description": "Search official development documentation",
+  "protocol": "mcp",
+  "tags": [
+    "docs",
+    "documentation"
+  ],
+  "capabilities": [
+    {
+      "name": "search_docs",
+      "description": "Search development documentation by keyword."
+    }
+  ],
+  "connection": {
+    "transport": "streamable-http",
+    "url": "https://mcp.example.com/mcp"
+  }
+}

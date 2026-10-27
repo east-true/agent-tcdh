@@ -1,0 +1,81 @@
+[
+  {
+    "source": "typesafe",
+    "operation": "models",
+    "httpStatus": 200
+  },
+  {
+    "source": "hub",
+    "path": "/api/targets"
+  },
+  {
+    "source": "hub",
+    "path": "/api/targets"
+  },
+  {
+    "source": "hub",
+    "path": "/mcp",
+    "method": "initialize"
+  },
+  {
+    "source": "hub",
+    "path": "/mcp",
+    "method": "notifications/initialized"
+  },
+  {
+    "source": "hub",
+    "path": "/mcp"
+  },
+  {
+    "source": "hub",
+    "path": "/mcp",
+    "method": "tools/call",
+    "tool": "search_targets"
+  },
+  {
+    "source": "hub",
+    "path": "/mcp",
+    "method": "tools/call",
+    "tool": "get_target"
+  },
+  {
+    "source": "target",
+    "path": "/gemini/agent-card.json"
+  },
+  {
+    "source": "target",
+    "path": "/gemini/a2a",
+    "method": "message/send"
+  },
+  {
+    "source": "hub",
+    "path": "/mcp",
+    "method": "tools/call",
+    "tool": "get_target"
+  },
+  {
+    "source": "target",
+    "path": "/jev/mcp",
+    "method": "initialize"
+  },
+  {
+    "source": "target",
+    "path": "/jev/mcp",
+    "method": "notifications/initialized"
+  },
+  {
+    "source": "target",
+    "path": "/jev/mcp"
+  },
+  {
+    "source": "target",
+    "path": "/jev/mcp",
+    "method": "tools/call",
+    "tool": "choose_protocol"
+  },
+  {
+    "source": "typesafe",
+    "operation": "systemone",
+    "httpStatus": 200
+  }
+]

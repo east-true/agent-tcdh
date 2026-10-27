@@ -1,0 +1,17 @@
+services:
+  hub:
+    build: .
+    init: true
+    ports:
+      - "${AGENT_TCDH_BIND_ADDRESS:-127.0.0.1}:${AGENT_TCDH_PORT:-3000}:3000"
+    environment:
+      AGENT_TCDH_TOKEN: "${AGENT_TCDH_TOKEN:-}"
+      AGENT_TCDH_READ_TOKEN: "${AGENT_TCDH_READ_TOKEN:-}"
+      AGENT_TCDH_ALLOWED_ORIGINS: "${AGENT_TCDH_ALLOWED_ORIGINS:-}"
+      AGENT_TCDH_PUBLIC_URL: "${AGENT_TCDH_PUBLIC_URL:-http://127.0.0.1:3000}"
+    volumes:
+      - registry-data:/data
+    restart: unless-stopped
+
+volumes:
+  registry-data:

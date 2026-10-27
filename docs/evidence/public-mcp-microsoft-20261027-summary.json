@@ -1,0 +1,79 @@
+{
+  "startedAt": "2026-10-27T08:07:02.746Z",
+  "modelCalls": 0,
+  "paymentOperations": 0,
+  "tossPackage": "@tosspayments/integration-guide-mcp@0.0.31",
+  "results": [
+    {
+      "target": "microsoft-learn",
+      "discovery": "mcp",
+      "tool": "microsoft_docs_search",
+      "arguments": {
+        "query": "Microsoft Learn MCP server overview"
+      },
+      "passed": true,
+      "responseBytes": 41092,
+      "textCharacters": 20488,
+      "sha256": "0ba58b61bf45a0f456508e844d7ae1f30cedffe1e8e0f2326da58d5cb67d232a"
+    },
+    {
+      "target": "microsoft-learn",
+      "discovery": "mcp",
+      "tool": "microsoft_docs_fetch",
+      "arguments": {
+        "url": "https://learn.microsoft.com/training/support/mcp"
+      },
+      "passed": true,
+      "responseBytes": 2804,
+      "textCharacters": 2691,
+      "sha256": "8a2ac1c2f6bc1ccd673bf437199b9c0195cac9fba797eb04724f649c37c21760",
+      "documentUrl": "https://learn.microsoft.com/training/support/mcp"
+    },
+    {
+      "target": "microsoft-learn",
+      "discovery": "a2a",
+      "tool": "microsoft_docs_search",
+      "arguments": {
+        "query": "Microsoft Learn MCP server overview"
+      },
+      "passed": true,
+      "responseBytes": 41092,
+      "textCharacters": 20488,
+      "sha256": "0ba58b61bf45a0f456508e844d7ae1f30cedffe1e8e0f2326da58d5cb67d232a"
+    },
+    {
+      "target": "microsoft-learn",
+      "discovery": "a2a",
+      "tool": "microsoft_docs_fetch",
+      "arguments": {
+        "url": "https://learn.microsoft.com/training/support/mcp"
+      },
+      "passed": true,
+      "responseBytes": 2804,
+      "textCharacters": 2691,
+      "sha256": "8a2ac1c2f6bc1ccd673bf437199b9c0195cac9fba797eb04724f649c37c21760",
+      "documentUrl": "https://learn.microsoft.com/training/support/mcp"
+    }
+  ],
+  "failures": [],
+  "passed": true,
+  "providers": [
+    {
+      "id": "microsoft-learn",
+      "server": {
+        "name": "Microsoft Learn MCP Server",
+        "version": "1.0.0"
+      },
+      "toolNames": [
+        "microsoft_docs_search",
+        "microsoft_code_sample_search",
+        "microsoft_docs_fetch"
+      ]
+    }
+  ],
+  "registrationToolCalls": 0,
+  "directToolCalls": 4,
+  "registeredTargets": 1,
+  "expectedDirectToolCalls": 4,
+  "finishedAt": "2026-10-27T08:07:09.634Z"
+}

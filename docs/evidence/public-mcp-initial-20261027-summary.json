@@ -1,0 +1,408 @@
+{
+  "startedAt": "2026-10-27T08:02:08.515Z",
+  "modelCalls": 0,
+  "paymentOperations": 0,
+  "tossPackage": "@tosspayments/integration-guide-mcp@0.0.31",
+  "results": [
+    {
+      "target": "cloudflare-docs",
+      "discovery": "mcp",
+      "tool": "search_cloudflare_documentation",
+      "arguments": {
+        "query": "MCP server Streamable HTTP Workers"
+      },
+      "passed": true,
+      "responseBytes": 63361,
+      "textCharacters": 30636,
+      "sha256": "5da77e4faeced43475ea5c5b1c1749e006560e4b50d70ea1fe3c1ec3dbc5f305"
+    },
+    {
+      "target": "cloudflare-docs",
+      "discovery": "mcp",
+      "tool": "migrate_pages_to_workers_guide",
+      "arguments": {},
+      "passed": true,
+      "responseBytes": 5753,
+      "textCharacters": 5423,
+      "sha256": "aaf4ef392cfbac48ae4a78de1387d6e0d149b2527b4b85f0b1f75f415cb2bb69"
+    },
+    {
+      "target": "context7",
+      "discovery": "mcp",
+      "tool": "resolve-library-id",
+      "arguments": {
+        "libraryName": "Fastify",
+        "query": "Create a Fastify TypeScript HTTP server with a GET route"
+      },
+      "passed": true,
+      "responseBytes": 1674,
+      "textCharacters": 1599,
+      "sha256": "2aa61756a1e78bf91f99a7da3a922e77a7d1a65802f694ad1713b15aa3811394"
+    },
+    {
+      "target": "context7",
+      "discovery": "mcp",
+      "tool": "query-docs",
+      "arguments": {
+        "libraryId": "/fastify/fastify",
+        "query": "Create a Fastify TypeScript HTTP server with a GET route",
+        "language": "TypeScript"
+      },
+      "passed": true,
+      "responseBytes": 7627,
+      "textCharacters": 7300,
+      "sha256": "551ce8b0ed9a5f5de1f38c846bbe5d9652d780d54211c9875450524e5443998a",
+      "libraryId": "/fastify/fastify"
+    },
+    {
+      "target": "deepwiki",
+      "discovery": "mcp",
+      "tool": "read_wiki_structure",
+      "arguments": {
+        "repoName": "modelcontextprotocol/typescript-sdk"
+      },
+      "passed": true,
+      "responseBytes": 3621,
+      "textCharacters": 1714,
+      "sha256": "e72d38e266509e4d6af6d167e83f3ec2de644b05d5455dfbfeba9e649bddadb3"
+    },
+    {
+      "target": "deepwiki",
+      "discovery": "mcp",
+      "tool": "read_wiki_contents",
+      "arguments": {
+        "repoName": "modelcontextprotocol/typescript-sdk"
+      },
+      "passed": true,
+      "responseBytes": 1044041,
+      "textCharacters": 508689,
+      "sha256": "ad0e749463a1038b5cb19ee0ee2e6490a9587a75c388c9c81744eef4d6886bcd"
+    },
+    {
+      "target": "microsoft-learn",
+      "discovery": "mcp",
+      "tool": "microsoft_docs_search",
+      "arguments": {
+        "query": "Microsoft Learn MCP server overview"
+      },
+      "passed": true,
+      "responseBytes": 41092,
+      "textCharacters": 20488,
+      "sha256": "0ba58b61bf45a0f456508e844d7ae1f30cedffe1e8e0f2326da58d5cb67d232a"
+    },
+    {
+      "target": "openai-docs",
+      "discovery": "mcp",
+      "tool": "search_openai_docs",
+      "arguments": {
+        "query": "Docs MCP server",
+        "limit": 2
+      },
+      "passed": true,
+      "responseBytes": 3146,
+      "textCharacters": 2849,
+      "sha256": "4b788f0da8aa9b993bf064091a7091999e37c3fee51d68ac584e4798e87b2e9e"
+    },
+    {
+      "target": "openai-docs",
+      "discovery": "mcp",
+      "tool": "fetch_openai_doc",
+      "arguments": {
+        "url": "https://developers.openai.com/learn/docs-mcp"
+      },
+      "passed": true,
+      "responseBytes": 5127,
+      "textCharacters": 4900,
+      "sha256": "fa6f538eb3ace6b34fb59879c4acf771bd0fcba2f1b908461068df75734eb140",
+      "documentUrl": "https://developers.openai.com/learn/docs-mcp"
+    },
+    {
+      "target": "tosspayments-docs",
+      "discovery": "mcp",
+      "tool": "get-documents",
+      "arguments": {
+        "version": "v2",
+        "keywords": [
+          "payment",
+          "widget"
+        ],
+        "searchMode": "broad",
+        "maxTokens": 1500
+      },
+      "passed": true,
+      "responseBytes": 2927,
+      "textCharacters": 1709,
+      "sha256": "0e6696e9d5198fc59e62ea88a1407ee89bb837a7fb62c184b3fe2b32e484bbe9"
+    },
+    {
+      "target": "tosspayments-docs",
+      "discovery": "mcp",
+      "tool": "document-by-id",
+      "arguments": {
+        "id": "15"
+      },
+      "passed": true,
+      "responseBytes": 18209,
+      "textCharacters": 13288,
+      "sha256": "a1b54000ccb131361d2964b91257b950df3cd6eb4269c3ad128dda4c805b79c7",
+      "documentId": "15",
+      "documentUrl": "https://docs.tosspayments.com/guides/v2/get-started/migration-guide"
+    },
+    {
+      "target": "cloudflare-docs",
+      "discovery": "a2a",
+      "tool": "search_cloudflare_documentation",
+      "arguments": {
+        "query": "MCP server Streamable HTTP Workers"
+      },
+      "passed": true,
+      "responseBytes": 63361,
+      "textCharacters": 30636,
+      "sha256": "5da77e4faeced43475ea5c5b1c1749e006560e4b50d70ea1fe3c1ec3dbc5f305"
+    },
+    {
+      "target": "cloudflare-docs",
+      "discovery": "a2a",
+      "tool": "migrate_pages_to_workers_guide",
+      "arguments": {},
+      "passed": true,
+      "responseBytes": 5753,
+      "textCharacters": 5423,
+      "sha256": "aaf4ef392cfbac48ae4a78de1387d6e0d149b2527b4b85f0b1f75f415cb2bb69"
+    },
+    {
+      "target": "context7",
+      "discovery": "a2a",
+      "tool": "resolve-library-id",
+      "arguments": {
+        "libraryName": "Fastify",
+        "query": "Create a Fastify TypeScript HTTP server with a GET route"
+      },
+      "passed": true,
+      "responseBytes": 1674,
+      "textCharacters": 1599,
+      "sha256": "2aa61756a1e78bf91f99a7da3a922e77a7d1a65802f694ad1713b15aa3811394"
+    },
+    {
+      "target": "context7",
+      "discovery": "a2a",
+      "tool": "query-docs",
+      "arguments": {
+        "libraryId": "/fastify/fastify",
+        "query": "Create a Fastify TypeScript HTTP server with a GET route",
+        "language": "TypeScript"
+      },
+      "passed": true,
+      "responseBytes": 7627,
+      "textCharacters": 7300,
+      "sha256": "dda4e69b810175c41cb321fd6e10c3c706efae60238b170cc1a99c2fb3ebc10c",
+      "libraryId": "/fastify/fastify"
+    },
+    {
+      "target": "deepwiki",
+      "discovery": "a2a",
+      "tool": "read_wiki_structure",
+      "arguments": {
+        "repoName": "modelcontextprotocol/typescript-sdk"
+      },
+      "passed": true,
+      "responseBytes": 3621,
+      "textCharacters": 1714,
+      "sha256": "e72d38e266509e4d6af6d167e83f3ec2de644b05d5455dfbfeba9e649bddadb3"
+    },
+    {
+      "target": "deepwiki",
+      "discovery": "a2a",
+      "tool": "read_wiki_contents",
+      "arguments": {
+        "repoName": "modelcontextprotocol/typescript-sdk"
+      },
+      "passed": true,
+      "responseBytes": 1044041,
+      "textCharacters": 508689,
+      "sha256": "ad0e749463a1038b5cb19ee0ee2e6490a9587a75c388c9c81744eef4d6886bcd"
+    },
+    {
+      "target": "microsoft-learn",
+      "discovery": "a2a",
+      "tool": "microsoft_docs_search",
+      "arguments": {
+        "query": "Microsoft Learn MCP server overview"
+      },
+      "passed": true,
+      "responseBytes": 41092,
+      "textCharacters": 20488,
+      "sha256": "0ba58b61bf45a0f456508e844d7ae1f30cedffe1e8e0f2326da58d5cb67d232a"
+    },
+    {
+      "target": "openai-docs",
+      "discovery": "a2a",
+      "tool": "search_openai_docs",
+      "arguments": {
+        "query": "Docs MCP server",
+        "limit": 2
+      },
+      "passed": true,
+      "responseBytes": 3146,
+      "textCharacters": 2849,
+      "sha256": "4b788f0da8aa9b993bf064091a7091999e37c3fee51d68ac584e4798e87b2e9e"
+    },
+    {
+      "target": "openai-docs",
+      "discovery": "a2a",
+      "tool": "fetch_openai_doc",
+      "arguments": {
+        "url": "https://developers.openai.com/learn/docs-mcp"
+      },
+      "passed": true,
+      "responseBytes": 5127,
+      "textCharacters": 4900,
+      "sha256": "fa6f538eb3ace6b34fb59879c4acf771bd0fcba2f1b908461068df75734eb140",
+      "documentUrl": "https://developers.openai.com/learn/docs-mcp"
+    },
+    {
+      "target": "tosspayments-docs",
+      "discovery": "a2a",
+      "tool": "get-documents",
+      "arguments": {
+        "version": "v2",
+        "keywords": [
+          "payment",
+          "widget"
+        ],
+        "searchMode": "broad",
+        "maxTokens": 1500
+      },
+      "passed": true,
+      "responseBytes": 2927,
+      "textCharacters": 1709,
+      "sha256": "0e6696e9d5198fc59e62ea88a1407ee89bb837a7fb62c184b3fe2b32e484bbe9"
+    },
+    {
+      "target": "tosspayments-docs",
+      "discovery": "a2a",
+      "tool": "document-by-id",
+      "arguments": {
+        "id": "15"
+      },
+      "passed": true,
+      "responseBytes": 18209,
+      "textCharacters": 13288,
+      "sha256": "a1b54000ccb131361d2964b91257b950df3cd6eb4269c3ad128dda4c805b79c7",
+      "documentId": "15",
+      "documentUrl": "https://docs.tosspayments.com/guides/v2/get-started/migration-guide"
+    }
+  ],
+  "failures": [
+    {
+      "target": "microsoft-learn",
+      "phase": "mcp",
+      "error": "Documentation response was empty or unexpectedly short."
+    },
+    {
+      "target": "microsoft-learn",
+      "phase": "a2a",
+      "error": "Documentation response was empty or unexpectedly short."
+    }
+  ],
+  "passed": false,
+  "providers": [
+    {
+      "id": "openai-docs",
+      "server": {
+        "name": "openai-docs-mcp",
+        "version": "1.0.0"
+      },
+      "toolNames": [
+        "search_openai_docs",
+        "list_openai_docs",
+        "fetch_openai_doc",
+        "list_api_endpoints",
+        "get_openapi_spec"
+      ]
+    },
+    {
+      "id": "tosspayments-docs",
+      "server": {
+        "name": "tosspayments-integration-guide",
+        "version": "1.0.0",
+        "description": "MCP-compatible toolset for integrating with tosspayments systems. Includes tools for retrieving LLM-structured text and fetching actual documentation through URLs. (토스페이먼츠 시스템과의 연동을 위한 MCP 도구 모음입니다. LLM이 활용할 수 있는 텍스트 및 관련 문서를 가져오는 기능을 포함합니다.)"
+      },
+      "toolNames": [
+        "get-documents",
+        "get-glossary-documents",
+        "document-by-id"
+      ]
+    },
+    {
+      "id": "microsoft-learn",
+      "server": {
+        "name": "Microsoft Learn MCP Server",
+        "version": "1.0.0"
+      },
+      "toolNames": [
+        "microsoft_docs_search",
+        "microsoft_code_sample_search",
+        "microsoft_docs_fetch"
+      ]
+    },
+    {
+      "id": "cloudflare-docs",
+      "server": {
+        "name": "docs-ai-search",
+        "version": "0.5.0"
+      },
+      "toolNames": [
+        "search_cloudflare_documentation",
+        "migrate_pages_to_workers_guide"
+      ]
+    },
+    {
+      "id": "context7",
+      "server": {
+        "name": "Context7",
+        "title": "Context7",
+        "icons": [
+          {
+            "src": "https://context7.com/context7-icon-green.svg",
+            "mimeType": "image/svg+xml",
+            "sizes": [
+              "any"
+            ]
+          },
+          {
+            "src": "https://context7.com/context7-icon-green.png",
+            "mimeType": "image/png",
+            "sizes": [
+              "512x512"
+            ]
+          }
+        ],
+        "version": "4.4.3",
+        "websiteUrl": "https://context7.com",
+        "description": "Context7 provides up-to-date documentation and code examples for libraries and frameworks."
+      },
+      "toolNames": [
+        "resolve-library-id",
+        "query-docs"
+      ]
+    },
+    {
+      "id": "deepwiki",
+      "server": {
+        "name": "DeepWiki",
+        "version": "2.14.3"
+      },
+      "toolNames": [
+        "ask_wiki_question",
+        "read_wiki_contents",
+        "read_wiki_structure"
+      ]
+    }
+  ],
+  "registrationToolCalls": 0,
+  "directToolCalls": 24,
+  "registeredTargets": 6,
+  "expectedDirectToolCalls": 24,
+  "finishedAt": "2026-10-27T08:02:57.212Z"
+}

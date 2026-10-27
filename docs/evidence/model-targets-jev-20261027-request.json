@@ -1,0 +1,17 @@
+{
+  "model": "jev-latest",
+  "state": {
+    "task": "Delegate a travel-planning task to another autonomous specialist agent."
+  },
+  "questions": {
+    "protocol": {
+      "type": "choice",
+      "instructions": "Select the protocol that fits the task in state.task.",
+      "criteria": {
+        "mcp": "Discover and invoke tools or retrieve resources from a tool server.",
+        "a2a": "Delegate a task to another autonomous agent through agent-to-agent communication.",
+        "none": "Neither description matches the task."
+      }
+    }
+  }
+}

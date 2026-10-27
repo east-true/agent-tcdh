@@ -147,3 +147,10 @@ vite.config.ts.timestamp-*
 
 # Turbo Repo
 .turbo
+
+# Local registry storage
+.agent-tcdh/
+*.sqlite
+*.sqlite-shm
+*.sqlite-wal
+.agent-tcdh-export-*/

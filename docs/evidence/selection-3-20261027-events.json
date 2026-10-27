@@ -1,0 +1,122 @@
+[
+  {
+    "source": "hub",
+    "path": "/api/targets"
+  },
+  {
+    "source": "hub",
+    "path": "/api/targets"
+  },
+  {
+    "source": "hub",
+    "path": "/api/targets"
+  },
+  {
+    "source": "hub",
+    "path": "/api/targets"
+  },
+  {
+    "source": "hub",
+    "path": "/api/targets"
+  },
+  {
+    "source": "hub",
+    "path": "/api/targets"
+  },
+  {
+    "source": "hub",
+    "path": "/api/targets"
+  },
+  {
+    "source": "hub",
+    "path": "/api/targets"
+  },
+  {
+    "source": "hub",
+    "path": "/api/targets"
+  },
+  {
+    "source": "hub",
+    "path": "/api/targets"
+  },
+  {
+    "source": "hub",
+    "path": "/mcp",
+    "method": "initialize"
+  },
+  {
+    "source": "hub",
+    "path": "/mcp",
+    "method": "notifications/initialized"
+  },
+  {
+    "source": "hub",
+    "path": "/mcp",
+    "method": "tools/list"
+  },
+  {
+    "source": "hub",
+    "path": "/mcp",
+    "method": "tools/call",
+    "tool": "search_targets"
+  },
+  {
+    "source": "hub",
+    "path": "/mcp",
+    "method": "tools/call",
+    "tool": "get_target"
+  },
+  {
+    "source": "hub",
+    "path": "/mcp",
+    "method": "tools/call",
+    "tool": "get_target"
+  },
+  {
+    "source": "hub",
+    "path": "/mcp",
+    "method": "tools/call",
+    "tool": "get_target"
+  },
+  {
+    "source": "target",
+    "path": "/provider-977cb305/agent-card.json"
+  },
+  {
+    "source": "target",
+    "path": "/provider-977cb305/a2a",
+    "method": "message/send"
+  },
+  {
+    "source": "target",
+    "path": "/provider-1a940af9/mcp",
+    "method": "initialize"
+  },
+  {
+    "source": "target",
+    "path": "/provider-898574a7/mcp",
+    "method": "initialize"
+  },
+  {
+    "source": "target",
+    "path": "/provider-1a940af9/mcp",
+    "method": "notifications/initialized"
+  },
+  {
+    "source": "target",
+    "path": "/provider-898574a7/mcp",
+    "method": "notifications/initialized"
+  },
+  {
+    "source": "target",
+    "path": "/provider-1a940af9/mcp",
+    "method": "tools/call",
+    "tool": "sort_numbers"
+  },
+  {
+    "source": "target",
+    "path": "/provider-898574a7/mcp",
+    "method": "tools/call",
+    "tool": "sum_numbers"
+  }
+]
