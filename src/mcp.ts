@@ -13,7 +13,7 @@ export interface DiscoveryReader {
 export function createDiscoveryServer(client: DiscoveryReader): McpServer {
   // 1. Explain discovery and direct connections to the consuming agent.
   const server = new McpServer(
-    { name: "agent-tcdh", version: "0.1.0" },
+    { name: "agent-tcdh", version: "0.1.1" },
     {
       instructions: "Use search_targets to find capabilities and get_target to inspect connection details. "
         + "Connect directly using the returned connection protocol, URL, or executable command. "

@@ -42,14 +42,22 @@ npm ci
 npm run demo
 ```
 
-For a published release, run the CLI without a source checkout:
+Install the built release without a source checkout:
 
 ```sh
-npx --yes agent-tcdh@0.1.0 --help
-npx --yes agent-tcdh@0.1.0 serve
+npm install --global https://github.com/jiind/agent-tcdh/releases/download/v0.1.1/agent-tcdh-0.1.1.tgz
+agent-tcdh --help
+agent-tcdh serve
 ```
 
-The [v0.1.0 release](https://github.com/jiind/agent-tcdh/releases/tag/v0.1.0) also provides a built tarball, checksums, and installation instructions. Source commands below use the repository checkout; an installed CLI uses `agent-tcdh` in place of `npm run cli --`.
+The previous npm release was withdrawn during account migration. After `0.1.1` is published to the npm registry, you can also use:
+
+```sh
+npx --yes agent-tcdh@0.1.1 --help
+npx --yes agent-tcdh@0.1.1 serve
+```
+
+The [v0.1.1 release](https://github.com/jiind/agent-tcdh/releases/tag/v0.1.1) provides the built tarball and checksums. Source commands below use the repository checkout; an installed CLI uses `agent-tcdh` in place of `npm run cli --`.
 
 The demo starts an isolated hub, registers three local targets, discovers them, and calls HTTP MCP, stdio MCP, and A2A targets directly. It checks execution receipts and cleans up. No account, API key, external service, or model is needed.
 
