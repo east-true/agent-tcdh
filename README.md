@@ -2,7 +2,7 @@
 
 **One registry for MCP servers and A2A agents.**
 
-[![CI](https://github.com/east-true/agent-tcdh/actions/workflows/ci.yml/badge.svg?branch=main)](https://github.com/east-true/agent-tcdh/actions/workflows/ci.yml)
+[![CI](https://github.com/jiind/agent-tcdh/actions/workflows/ci.yml/badge.svg?branch=main)](https://github.com/jiind/agent-tcdh/actions/workflows/ci.yml)
 [![License: Apache-2.0](https://img.shields.io/badge/license-Apache--2.0-blue)](LICENSE)
 
 Agent & Tool Capability Discovery Hub is an open-source TypeScript service for managing agent and tool connection metadata in one place. Register a target once, let consumers discover its capabilities and connection details, and execute directly against the selected target.
@@ -36,7 +36,7 @@ The consumer owns target selection, protocol clients, credentials, and execution
 Use **Node.js 24 or newer** and npm. Install from source:
 
 ```sh
-git clone https://github.com/east-true/agent-tcdh.git
+git clone https://github.com/jiind/agent-tcdh.git
 cd agent-tcdh
 npm ci
 npm run demo
@@ -49,7 +49,7 @@ npx --yes agent-tcdh@0.1.0 --help
 npx --yes agent-tcdh@0.1.0 serve
 ```
 
-The [v0.1.0 release](https://github.com/east-true/agent-tcdh/releases/tag/v0.1.0) also provides a built tarball, checksums, and installation instructions. Source commands below use the repository checkout; an installed CLI uses `agent-tcdh` in place of `npm run cli --`.
+The [v0.1.0 release](https://github.com/jiind/agent-tcdh/releases/tag/v0.1.0) also provides a built tarball, checksums, and installation instructions. Source commands below use the repository checkout; an installed CLI uses `agent-tcdh` in place of `npm run cli --`.
 
 The demo starts an isolated hub, registers three local targets, discovers them, and calls HTTP MCP, stdio MCP, and A2A targets directly. It checks execution receipts and cleans up. No account, API key, external service, or model is needed.
 

@@ -13,9 +13,11 @@ Checked on 2026-10-27:
 | macOS Intel | 24.19.0 | 118 passed | Passed | `macos-15-intel` |
 | Windows x64 | 24.22.1 | 117 passed | Passed | `windows-2025` |
 
-All five jobs in [the final native CI run](https://github.com/east-true/agent-tcdh/actions/runs/40477604438) completed successfully, including the independent Linux container job. The tested code commit is `ac2c7575e62332ddd7fd771e075a036fe00b8403`. Windows has one fewer test because the additional POSIX signal-handler test is replaced by the cross-platform IPC teardown check. No tests failed or were marked skipped within each platform's configured suite.
+All five jobs in [the final native CI run](https://github.com/jiind/agent-tcdh/actions/runs/40477604438) completed successfully, including the independent Linux container job. The tested code commit is `ac2c7575e62332ddd7fd771e075a036fe00b8403`. Windows has one fewer test because the additional POSIX signal-handler test is replaced by the cross-platform IPC teardown check. No tests failed or were marked skipped within each platform's configured suite.
 
 The [workflow](../.github/workflows/ci.yml) records the actual OS, architecture, and Node version and runs locked installation, typecheck, build, protocol regression, and isolated production-package verification on native runners. Docker runs as a separate Linux job. Local Linux verification also passed with Node.js 24.18.0. These results cover the recorded runner versions, including Windows Server 2025; they do not establish support for every historical OS release.
+
+The evidence snapshots preserve the repository owner recorded at verification time (`east-true`). Current navigation links use `jiind` after the account rename.
 
 ## Portability fixes
 
@@ -78,9 +80,9 @@ Public-provider and real-model checks remain opt-in and are not automatically ex
 
 ## Evidence
 
-- [Native CI run and all job results](https://github.com/east-true/agent-tcdh/actions/runs/40477604438)
+- [Native CI run and all job results](https://github.com/jiind/agent-tcdh/actions/runs/40477604438)
 - [Recorded runtimes, test counts, package outcomes, and earlier failures](evidence/platform-compatibility-20261027.json)
-- [Verified code commit](https://github.com/east-true/agent-tcdh/commit/ac2c7575e62332ddd7fd771e075a036fe00b8403)
+- [Verified code commit](https://github.com/jiind/agent-tcdh/commit/ac2c7575e62332ddd7fd771e075a036fe00b8403)
 
 The report and JSON evidence were added after the verified code commit. Their documentation-only commit uses `[skip ci]`; the recorded native results apply to the exact source commit above.
 

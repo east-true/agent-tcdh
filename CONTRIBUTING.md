@@ -7,7 +7,7 @@ Bug reports, documentation improvements, examples, and pull requests are welcome
 Use Node.js 24 and npm:
 
 ```sh
-git clone https://github.com/east-true/agent-tcdh.git
+git clone https://github.com/jiind/agent-tcdh.git
 cd agent-tcdh
 npm ci
 npm run check
