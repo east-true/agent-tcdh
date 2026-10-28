@@ -28,7 +28,7 @@
   },
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/east-true/agent-tcdh.git"
+    "url": "git+https://github.com/jiind/agent-tcdh.git"
   },
   "dependencies": {
     "@a2a-js/sdk": "^1.3.0",
@@ -56,9 +56,9 @@
     "SECURITY.md",
     "CHANGELOG.md"
   ],
-  "homepage": "https://github.com/east-true/agent-tcdh#readme",
+  "homepage": "https://github.com/jiind/agent-tcdh#readme",
   "bugs": {
-    "url": "https://github.com/east-true/agent-tcdh/issues"
+    "url": "https://github.com/jiind/agent-tcdh/issues"
   },
   "keywords": [
     "agents",

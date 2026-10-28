@@ -2,7 +2,7 @@
 
 ## Reporting a vulnerability
 
-Please report suspected vulnerabilities through the repository's [private vulnerability reporting form](https://github.com/east-true/agent-tcdh/security/advisories/new). Do not include vulnerability details, exploit code, credentials, or sensitive logs in public issues.
+Please report suspected vulnerabilities through the repository's [private vulnerability reporting form](https://github.com/jiind/agent-tcdh/security/advisories/new). Do not include vulnerability details, exploit code, credentials, or sensitive logs in public issues.
 
 Include the affected commit or version, Node version, operating system, deployment configuration with secrets removed, reproduction steps, impact, and a minimal proof of concept in the private report. Ordinary bugs can use the public bug-report form.
 
