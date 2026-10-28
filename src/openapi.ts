@@ -88,7 +88,7 @@ export function createOpenApiDocument(authEnabled: boolean) {
     jsonSchemaDialect: "https://json-schema.org/draft/2020-12/schema",
     info: {
       title: "AgentTCDH",
-      version: "0.1.0",
+      version: "0.1.1",
       description: "Register and discover MCP servers and A2A agents and retrieve direct connection details",
       license: { name: "Apache-2.0" },
     },

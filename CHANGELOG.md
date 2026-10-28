@@ -1,5 +1,14 @@
 # Changelog
 
+## 0.1.1 — 2026-10-28
+
+- Prepare a new package version after the previous npm package was withdrawn during account migration. Previously published version numbers cannot be reused.
+- Point repository metadata, documentation, release links, and trusted publisher instructions to `jiind/agent-tcdh`.
+- Advertise version `0.1.1` in MCP clients/server metadata, the A2A Agent Card, and OpenAPI.
+- Document GitHub tarball installation while npm publication is pending.
+
+Runtime behavior, SQLite schema version 2, and snapshot format version 1 are unchanged. See the [release notes](docs/releases/v0.1.1.md).
+
 ## 0.1.0 — 2026-10-27
 
 Initial public release of AgentTCDH, a shared capability and connection registry for MCP servers and A2A agents.

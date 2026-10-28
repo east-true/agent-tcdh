@@ -157,7 +157,7 @@ async function inspectMcp(
   timeoutMs: number,
 ) {
   // 1. Connect the remote transport and retrieve the server name.
-  const client = new Client({ name: "agent-tcdh-import", version: "0.1.0" });
+  const client = new Client({ name: "agent-tcdh-import", version: "0.1.1" });
   const transport = options.transport === "sse"
     ? new SSEClientTransport(url, { fetch: request })
     : new StreamableHTTPClientTransport(url, { fetch: request });

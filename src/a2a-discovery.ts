@@ -20,7 +20,7 @@ export type DiscoveryCommand = z.infer<typeof discoveryCommandSchema>;
 export function createHubAgentCard(baseUrl: string, authEnabled: boolean): AgentCard {
   // 1. Publish the query format and supported protocol versions.
   const card = AgentCard.fromJSON({
-    name: "AgentTCDH", version: "0.1.0",
+    name: "AgentTCDH", version: "0.1.1",
     description: "Find capabilities and connection details for registered MCP servers and A2A agents. "
       + "A text part is used as a literal keyword query; a data part uses {operation, arguments}. "
       + "Connect directly using the returned connection. Conversation history and long-running tasks are not stored.",
