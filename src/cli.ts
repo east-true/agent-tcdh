@@ -4,10 +4,17 @@ import { HubClient } from "./client.js";
 import { searchSchema, targetDefinitionSchema, targetIdSchema } from "./targets/schema.js";
 import { readClientToken } from "./auth.js";
 import { a2aSelectionSchema } from "./targets/a2a.js";
+import { loadConfig, consumerTokenEnv } from "./onboarding/config.js";
+import { formatCommand, printOnboarding, targetTable } from "./onboarding/output.js";
 
 const help = `AgentTCDH — Agent & Tool Capability Discovery Hub
 
 Usage:
+  agent-tcdh init [--yes] [--config FILE] [--hub URL] [--host HOST] [--port PORT] [--db FILE]
+  agent-tcdh connect codex|opencode|opencode-v1 [--print | --write FILE] [--dry-run] [--replace]
+  agent-tcdh doctor [--target ID] [--hub URL]
+  agent-tcdh target add <URL> [--protocol auto|mcp|a2a] [--id ID] [--dry-run]
+  agent-tcdh target add --command COMMAND [--arg=ARG ...] [--env-var NAME ...] [--name NAME]
   agent-tcdh serve [--host HOST] [--port PORT] [--db FILE]
   agent-tcdh target add <JSON_FILE> [--hub URL]
   agent-tcdh target update <ID> <JSON_FILE> [--if-match ETAG] [--hub URL]
@@ -26,6 +33,7 @@ Environment:
   HOST                  Listener address (default: 127.0.0.1)
   PORT                  Listener port (default: 3000)
   AGENT_TCDH_DB_PATH     SQLite file (default: ~/.agent-tcdh/registry.sqlite)
+  AGENT_TCDH_CONFIG      Optional setup configuration path (default: ~/.agent-tcdh/config.json)
   AGENT_TCDH_URL         Hub URL for CLI and MCP (default: http://127.0.0.1:3000)
   AGENT_TCDH_TOKEN       Optional administrator Bearer token; default CLI/MCP credential
   AGENT_TCDH_READ_TOKEN  Optional read-only token accepted by the server
@@ -34,6 +42,19 @@ Environment:
 
 Options:
   --help, -h            Show usage
+  --config FILE         Use setup defaults; flags override environment, then configuration
+  --json                Print JSON, including in a terminal; redirected output defaults to JSON
+  --remote              Initialize client settings for an existing hub
+  --yes                 Initialize without prompts, using supplied options and defaults
+  --force               Replace setup configuration with an exact backup
+  --read-token-env NAME  Record the read credential environment name during setup
+  --print               Print only the generated client configuration fragment
+  --write FILE          Merge the hub into this explicit client file, preserving a backup
+  --replace             Replace a conflicting named hub entry in a client configuration
+  --target ID           Inspect this target's metadata and local prerequisites during doctor
+  --command COMMAND     Register a local MCP stdio command without executing it
+  --arg ARG             Repeat for each literal stdio argument; use --arg=--flag for flags
+  --env-var NAME        Declare a consumer-side environment variable, without storing its value
   --name NAME          Override the imported target's display name
   --description TEXT   Override the imported target's description
   --transport TYPE     MCP import transport: streamable-http or sse
@@ -59,6 +80,19 @@ export async function runCli(args: string[]): Promise<void> {
     strict: true,
     options: {
       help: { type: "boolean", short: "h" },
+      config: { type: "string" },
+      json: { type: "boolean" },
+      yes: { type: "boolean" },
+      remote: { type: "boolean" },
+      force: { type: "boolean" },
+      "read-token-env": { type: "string" },
+      print: { type: "boolean" },
+      write: { type: "string" },
+      replace: { type: "boolean" },
+      target: { type: "string" },
+      command: { type: "string" },
+      arg: { type: "string", multiple: true },
+      "env-var": { type: "string", multiple: true },
       host: { type: "string" },
       port: { type: "string" },
       db: { type: "string" },
@@ -89,17 +123,70 @@ export async function runCli(args: string[]): Promise<void> {
     return;
   }
 
-  // 2. Apply server settings only to the serve command.
+  // 2. Prepare first-run configuration without loading a file that does not exist yet.
   const command = positionals[0] ?? "serve";
+  if (command === "init") {
+    validateArguments(positionals, 1, values, ["config", "json", "yes", "remote", "force", "hub", "host", "port", "db", "token-env", "read-token-env"]);
+    const { initialize } = await import("./onboarding/init.js");
+    const result = await initialize({ config: values.config, yes: values.yes, remote: values.remote, force: values.force,
+      hub: values.hub, host: values.host, port: values.port, db: values.db,
+      tokenEnv: values["token-env"], readTokenEnv: values["read-token-env"],
+    });
+    printOnboarding(result, values.json, () => "Configuration saved: " + result.path + "\nHub: " + result.hub
+      + (result.backup ? "\nBackup: " + result.backup : "")
+      + (result.credentialEnvironmentVariables.length ? "\nSet these environment variables before starting: " + result.credentialEnvironmentVariables.join(", ") : result.mode === "local" ? "\nLocal setup without explicit credential references; configure tokens before sharing the listener." : "\nExisting hub selected; configure its credential references if required.")
+      + "\nNext commands" + (result.mode === "local" ? " (run serve in another terminal)" : "") + ":\n"
+      + result.nextCommands.map((args) => formatCommand(args)).join("\n"));
+    return;
+  }
+  const config = await loadConfig(values.config);
+  const hub = values.hub ?? process.env.AGENT_TCDH_URL ?? config?.hub ?? "http://127.0.0.1:3000";
+
+  // 3. Generate consumer settings and run read-only diagnostics before requiring administration credentials.
+  if (command === "connect") {
+    validateArguments(positionals, 2, values, ["hub", "print", "write", "dry-run", "replace", "name"]);
+    if (values.print && values.write || values.print && values.json || (values["dry-run"] || values.replace) && !values.write) {
+      throw new Error("Use --print alone, or --write FILE with optional --dry-run. --print cannot be combined with --json.");
+    }
+    const { connectClient } = await import("./onboarding/connect.js");
+    const result = await connectClient({ client: positionals[1]!, hub,
+      tokenEnv: values["token-env"] ?? consumerTokenEnv(config), write: values.write,
+      replace: values.replace, name: values.name, dryRun: values["dry-run"],
+    });
+    if (values.print) {
+      process.stdout.write(result.content!);
+    } else {
+      printOnboarding(result, values.json, () => (result.content ?? "Configuration saved: " + result.path)
+        + ("backup" in result && result.backup ? "\nBackup: " + result.backup : "")
+        + "\n" + result.notes.join("\n") + "\n" + result.instructions
+        + (result.requiredEnvironmentVariables.length ? "\nRequired in the client environment: " + result.requiredEnvironmentVariables.join(", ") : ""));
+    }
+    return;
+  }
+  if (command === "doctor") {
+    validateArguments(positionals, 1, values, ["hub", "target"]);
+    const { diagnose } = await import("./onboarding/doctor.js");
+    const result = await diagnose({ hub, tokenEnv: values["token-env"] ?? consumerTokenEnv(config), target: values.target === undefined ? undefined : targetIdSchema.parse(values.target) });
+    printOnboarding(result, values.json, () => result.checks.map((check) => check.status.toUpperCase() + " " + check.id + ": " + check.message
+      + (check.status !== "passed" && check.action ? "\n  Next: " + check.action : "")).join("\n")
+      + "\nExecution verification: not performed.");
+    process.exitCode = result.status === "failed" ? 1 : 0;
+    return;
+  }
+
+  // 4. Apply server options using flags, environment, setup configuration, then built-in defaults.
   if (command === "serve") {
     validateArguments(positionals, positionals.length === 0 ? 0 : 1, values, ["host", "port", "db"]);
+    if (config?.mode === "remote") {
+      throw new Error("This configuration connects to an existing hub. Initialize a local setup configuration to run serve.");
+    }
     const { runServer, serverOptionsSchema } = await import("./server.js");
     await runServer(serverOptionsSchema.parse({
-      host: values.host ?? process.env.HOST ?? "127.0.0.1",
-      port: values.port ?? process.env.PORT ?? "3000",
-      dbPath: values.db ?? process.env.AGENT_TCDH_DB_PATH,
-      token: process.env.AGENT_TCDH_TOKEN || undefined,
-      readToken: process.env.AGENT_TCDH_READ_TOKEN || undefined,
+      host: values.host ?? process.env.HOST ?? config?.server.host ?? "127.0.0.1",
+      port: values.port ?? process.env.PORT ?? config?.server.port ?? "3000",
+      dbPath: values.db ?? process.env.AGENT_TCDH_DB_PATH ?? config?.server.dbPath,
+      token: readClientToken(config?.tokenEnv, config?.tokenEnv !== undefined),
+      readToken: readClientToken(config?.readTokenEnv ?? "AGENT_TCDH_READ_TOKEN", config?.readTokenEnv !== undefined),
       publicUrl: process.env.AGENT_TCDH_PUBLIC_URL || undefined,
       allowedOrigins: (process.env.AGENT_TCDH_ALLOWED_ORIGINS ?? "")
         .split(",").map((origin) => origin.trim()).filter(Boolean),
@@ -107,11 +194,19 @@ export async function runCli(args: string[]): Promise<void> {
     return;
   }
 
-  // 3. Share a hub client across MCP discovery and registry commands.
-  const client = new HubClient(
-    values.hub ?? process.env.AGENT_TCDH_URL ?? "http://127.0.0.1:3000",
-    readClientToken(values["token-env"], values["token-env"] !== undefined),
-  );
+  // 5. Share the authenticated registry API with existing CLI and MCP commands.
+  if (!["mcp", "target", "registry"].includes(command)) {
+    throw new Error("Unknown command. Run --help for usage.");
+  }
+  const metadataPreview = command === "target" && ["add", "import"].includes(positionals[1] ?? "") && values["dry-run"];
+  const readCommand = command === "mcp" || command === "target" && (["list", "get", "check"].includes(positionals[1] ?? "")
+    || positionals[1] === "refresh" && values["dry-run"]);
+  if (!readCommand && !metadataPreview && !values["token-env"] && config?.readTokenEnv && !config.tokenEnv && !process.env.AGENT_TCDH_TOKEN) {
+    throw new Error("This setup has only read credentials. Select an administrator credential with --token-env for mutations.");
+  }
+  const clientTokenEnv = values["token-env"] ?? (metadataPreview ? undefined : readCommand ? config?.readTokenEnv ?? config?.tokenEnv : config?.tokenEnv);
+  const client = new HubClient(hub, metadataPreview && values["token-env"] === undefined ? undefined
+    : readClientToken(clientTokenEnv, clientTokenEnv !== undefined));
   if (command === "mcp") {
     validateArguments(positionals, 1, values, ["hub"]);
     const { runDiscoveryServer } = await import("./mcp.js");
@@ -144,7 +239,7 @@ export async function runCli(args: string[]): Promise<void> {
     throw new Error("Unknown command. Run --help for usage.");
   }
 
-  // 4. Validate command arguments and input files before printing results.
+  // 6. Validate command arguments and input files before printing results.
   const action = positionals[1];
   if (action === "check") {
     validateArguments(positionals, 3, values, ["hub", "bearer-env"]);
@@ -188,20 +283,40 @@ export async function runCli(args: string[]): Promise<void> {
   }
   if (action === "list") {
     validateArguments(positionals, 2, values, ["hub", "q", "protocol", "tag", "limit", "offset", "include-disabled"]);
-    printJson(await client.search(searchSchema.parse({
+    const result = await client.search(searchSchema.parse({
       q: values.q,
       protocol: values.protocol,
       tag: values.tag,
       limit: values.limit === undefined ? undefined : Number(values.limit),
       offset: values.offset === undefined ? undefined : Number(values.offset),
       includeDisabled: values["include-disabled"],
-    })));
+    }));
+    if (!values.json && process.stdout.isTTY) {
+      process.stdout.write(targetTable(result));
+    } else {
+      printJson(result);
+    }
     return;
   }
   if (action === "add") {
-    validateArguments(positionals, 3, values, ["hub"]);
-    const target = await readDefinition(positionals[2]!);
-    printJson(await client.create(target));
+    const source = positionals[2];
+    const quick = values.command !== undefined || source !== undefined && (/^https?:/iu.test(source) || /^[a-z][a-z0-9+.-]*:\/\//iu.test(source));
+    if (quick) {
+      validateArguments(positionals, values.command !== undefined ? 2 : 3, values, [
+        "hub", "id", "protocol", "name", "description", "tag", "transport", "bearer-env", "dry-run",
+        "a2a-binding", "a2a-version", "command", "arg", "env-var",
+      ]);
+      const { quickDefinition } = await import("./onboarding/add.js");
+      const target = await quickDefinition({ url: source, command: values.command, args: values.arg, envVars: values["env-var"],
+        id: values.id, protocol: values.protocol, name: values.name, description: values.description, tag: values.tag,
+        transport: values.transport, bearerEnv: values["bearer-env"], a2aBinding: values["a2a-binding"], a2aVersion: values["a2a-version"],
+      });
+      printJson(values["dry-run"] ? target : await client.create(target));
+    } else {
+      validateArguments(positionals, 3, values, ["hub"]);
+      const target = await readDefinition(source!);
+      printJson(await client.create(target));
+    }
     return;
   }
   if (action === "update") {
@@ -242,7 +357,7 @@ function validateArguments(
   }
 
   // 2. Reject options belonging to another command instead of silently ignoring them.
-  const allowed = allowedOptions.includes("hub") ? [...allowedOptions, "token-env"] : allowedOptions;
+  const allowed = [...allowedOptions, "config", "json", ...(allowedOptions.includes("hub") ? ["token-env"] : [])];
   const unexpected = Object.keys(values).filter((name) => name !== "help" && !allowed.includes(name));
   if (unexpected.length > 0) {
     throw new Error("Unsupported options for this command: " + unexpected.join(", "));
