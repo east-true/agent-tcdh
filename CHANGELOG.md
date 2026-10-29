@@ -1,5 +1,14 @@
 # Changelog
 
+## Unreleased
+
+- Add interactive/non-interactive `init` with reusable settings and credential environment references.
+- Add URL-based MCP/A2A quick registration and stdio command registration without launching targets.
+- Add Codex and explicit OpenCode v1/v2 connection templates, opt-in file merging, and backups.
+- Add `doctor` diagnostics that separate hub health, discovery authentication, metadata inspection, and unverified execution.
+- Keep JSON automation output and add readable terminal target lists and onboarding summaries.
+
+
 ## 0.1.1 — 2026-10-28
 
 - Prepare a new package version after the previous npm package was withdrawn during account migration. Previously published version numbers cannot be reused.

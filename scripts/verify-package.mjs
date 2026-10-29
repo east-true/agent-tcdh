@@ -46,7 +46,7 @@ try {
   const [manifest] = manifests;
   assert.equal(manifest.name, "agent-tcdh");
   const files = new Set(manifest.files.map((entry) => entry.path));
-  for (const required of ["dist/index.js", "dist/app.js", "dist/a2a-http.js", "dist/targets/check.js", "docs/agent-compatibility.md", "docs/agent-verification.md", "examples/a2a.json", "README.md", "LICENSE", "CONTRIBUTING.md", "SECURITY.md", "CHANGELOG.md"]) {
+  for (const required of ["dist/index.js", "dist/onboarding/connect.js", "dist/onboarding/doctor.js", "docs/onboarding.md", "dist/app.js", "dist/a2a-http.js", "dist/targets/check.js", "docs/agent-compatibility.md", "docs/agent-verification.md", "examples/a2a.json", "README.md", "LICENSE", "CONTRIBUTING.md", "SECURITY.md", "CHANGELOG.md"]) {
     assert.ok(files.has(required), "Required package file is missing: " + required);
   }
   for (const required of ["examples/local-demo.mjs", "examples/demo-targets.mjs", "docs/local-demo.md", "examples/public-docs-registry.json", "docs/public-mcp-verification.md", "docs/selection-verification.md", "docs/model-target-verification.md", "docs/platform-compatibility.md", "docs/reference.md"]) {
@@ -81,9 +81,28 @@ try {
     await once(child, "spawn");
     await waitForHub(url, () => child.exitCode === null && child.signalCode === null);
   }
+  // Exercise onboarding from the installed artifact using only isolated configuration files.
+  const setupPath = join(directory, "setup.json");
+  await runCommand(executable, [...prefix, "init", "--yes", "--config", setupPath, "--hub", url,
+    "--port", String(port), "--db", join(directory, "registry.sqlite"),
+    "--token-env", "AGENT_TCDH_TOKEN", "--read-token-env", "AGENT_TCDH_READ_TOKEN"], { cwd: installation, env: environment });
+  environment.AGENT_TCDH_CONFIG = setupPath;
+  const consumerConfig = join(directory, "consumer.jsonc");
+  const connected = await runCommand(executable, [...prefix, "connect", "opencode", "--write", consumerConfig], { cwd: installation, env: environment });
+  assert.equal(JSON.parse(connected.stdout).changed, true);
+  assert.ok((await readFile(consumerConfig, "utf8")).includes("AGENT_TCDH_READ_TOKEN"));
+  const codex = await runCommand(executable, [...prefix, "connect", "codex", "--print"], { cwd: installation, env: environment });
+  assert.ok(codex.stdout.includes("bearer_token_env_var"));
+  assert.ok(!codex.stdout.includes(credentials.readToken));
+  const local = await runCommand(executable, [...prefix, "target", "add", "--command", process.execPath,
+    "--name", "Package stdio registration", "--dry-run"], { cwd: installation, env: environment });
+  assert.equal(JSON.parse(local.stdout).connection.transport, "stdio");
   const marker = "package-" + randomUUID();
   await startServer();
   const initial = await verifyRuntime(url, credentials, marker);
+  const doctor = await runCommand(executable, [...prefix, "doctor"], { cwd: installation, env: environment });
+  assert.equal(JSON.parse(doctor.stdout).status, "passed");
+  assert.equal(JSON.parse(doctor.stdout).executionVerified, false);
 
   // 4. Verify JSON failure diagnostics for an unreachable metadata endpoint using the installed CLI.
   let diagnostic;
@@ -113,7 +132,7 @@ try {
   assert.ok(demoResult.executions.some((entry) => entry.transport === "stdio"));
   assert.equal(demoResult.remainingTargets.length, 2);
   console.log(JSON.stringify({ package: manifest.filename, isolatedProductionInstall: true,
-    installedBinary: true, documentation: true, targetDiagnostics: true, localDemo: true, initial, restarted, persistence: true }, null, 2));
+    installedBinary: true, onboarding: true, documentation: true, targetDiagnostics: true, localDemo: true, initial, restarted, persistence: true }, null, 2));
 } finally {
   // 7. Clean up only the processes and temporary files created by this run.
   try {

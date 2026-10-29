@@ -4,6 +4,8 @@ CLI, connection definitions, protocol details, authentication, and deployment se
 
 ## CLI
 
+The upcoming `init`, quick-add, `connect`, and `doctor` commands on `main` are documented in [guided setup](onboarding.md). They are not included in npm `0.1.1`. Existing CLI commands also accept `--config FILE` setup defaults and `--json` on `main`.
+
 ```text
 agent-tcdh serve [--host HOST] [--port PORT] [--db FILE]
 agent-tcdh target add <JSON_FILE> [--hub URL]

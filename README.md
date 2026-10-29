@@ -33,28 +33,27 @@ The consumer owns target selection, protocol clients, credentials, and execution
 
 ## Quickstart
 
-Use **Node.js 24 or newer** and npm. Install from source:
+Use **Node.js 24 or newer** and npm. Start the published hub:
+
+```sh
+npx --yes agent-tcdh@0.1.1 serve
+```
+
+For a global installation:
+
+```sh
+npm install --global agent-tcdh@0.1.1
+agent-tcdh --help
+agent-tcdh serve
+```
+
+To run the isolated demo from source:
 
 ```sh
 git clone https://github.com/jiind/agent-tcdh.git
 cd agent-tcdh
 npm ci
 npm run demo
-```
-
-Install the built release without a source checkout:
-
-```sh
-npm install --global https://github.com/jiind/agent-tcdh/releases/download/v0.1.1/agent-tcdh-0.1.1.tgz
-agent-tcdh --help
-agent-tcdh serve
-```
-
-The previous npm release was withdrawn during account migration. After `0.1.1` is published to the npm registry, you can also use:
-
-```sh
-npx --yes agent-tcdh@0.1.1 --help
-npx --yes agent-tcdh@0.1.1 serve
 ```
 
 The [v0.1.1 release](https://github.com/jiind/agent-tcdh/releases/tag/v0.1.1) provides the built tarball and checksums. Source commands below use the repository checkout; an installed CLI uses `agent-tcdh` in place of `npm run cli --`.
@@ -87,6 +86,26 @@ npm run cli -- target get openai-docs
 The snapshot includes OpenAI Docs, Toss Payments Docs, Microsoft Learn, Cloudflare Docs, Context7, and DeepWiki. Import stores their observed metadata. Consumers establish connections when using a target; Toss's pinned npm command runs in the consumer environment.
 
 These are working examples, not a provider allowlist. Register other MCP servers and A2A agents using the [generic definition schema](docs/reference.md#search-and-connection-definitions), or [import their remote metadata](docs/reference.md#import-and-refresh-metadata).
+
+## Guided setup on main
+
+The next release adds guided setup, file-free registration, client configuration generation, and diagnostics. These commands are available from a source checkout on `main`; published npm `0.1.1` uses the original CLI.
+
+```sh
+npm run build
+node dist/index.js init
+node dist/index.js serve
+```
+
+In another terminal in the checkout, replace the example URL with your target:
+
+```sh
+node dist/index.js target add https://mcp.example.com/mcp
+node dist/index.js connect codex --print
+node dist/index.js doctor
+```
+
+`init` saves reusable settings. Quick add inspects remote metadata or records a local stdio command. `connect` generates Codex or version-specific OpenCode settings; explicit file writes merge and back up existing configuration. `doctor` separates hub access, metadata checks, and unverified execution. See [guided setup and diagnostics](docs/onboarding.md) for credential references, non-interactive setup, and merging options.
 
 ## MCP discovery
 
@@ -178,6 +197,7 @@ Real-agent/model checks are also opt-in and can consume model usage. See [verifi
 ## Documentation
 
 - [CLI, API, protocols, and configuration reference](docs/reference.md)
+- [Guided setup, agent configuration, and diagnostics](docs/onboarding.md)
 - [Local demo](docs/local-demo.md)
 - [MCP/A2A agent registration compatibility](docs/agent-compatibility.md)
 - [Actual-agent verification](docs/agent-verification.md)
