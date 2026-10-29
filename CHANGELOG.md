@@ -2,6 +2,9 @@
 
 ## Unreleased
 
+- Add offline-first MCP configuration import from Codex, OpenCode v1/v2, and portable `mcpServers` JSON/JSONC, with selection, namespacing, and atomic opt-in application.
+- Add packaged public documentation presets with historical metadata dates and selective registration.
+
 - Add interactive/non-interactive `init` with reusable settings and credential environment references.
 - Add URL-based MCP/A2A quick registration and stdio command registration without launching targets.
 - Add Codex and explicit OpenCode v1/v2 connection templates, opt-in file merging, and backups.
