@@ -48,7 +48,7 @@ try {
   const [manifest] = manifests;
   assert.equal(manifest.name, "agent-tcdh");
   const files = new Set(manifest.files.map((entry) => entry.path));
-  for (const required of ["dist/index.js", "dist/onboarding/connect.js", "dist/onboarding/doctor.js", "dist/onboarding/doctor-batch.js", "docs/onboarding.md", "docs/client-connections.md", "dist/onboarding/import-config.js", "dist/onboarding/presets.js", "docs/config-import.md", "dist/app.js", "dist/a2a-http.js", "dist/targets/check.js", "dist/targets/edit.js", "docs/target-management.md", "docs/agent-compatibility.md", "docs/agent-verification.md", "examples/a2a.json", "README.md", "LICENSE", "CONTRIBUTING.md", "SECURITY.md", "CHANGELOG.md"]) {
+  for (const required of ["dist/index.js", "dist/onboarding/connect.js", "dist/onboarding/doctor.js", "dist/onboarding/doctor-batch.js", "docs/onboarding.md", "docs/client-connections.md", "dist/onboarding/import-config.js", "dist/onboarding/presets.js", "docs/config-import.md", "dist/app.js", "dist/a2a-http.js", "dist/targets/check.js", "dist/targets/edit.js", "dist/registry/diff.js", "docs/registry-comparison.md", "docs/target-management.md", "docs/agent-compatibility.md", "docs/agent-verification.md", "examples/a2a.json", "README.md", "LICENSE", "CONTRIBUTING.md", "SECURITY.md", "CHANGELOG.md"]) {
     assert.ok(files.has(required), "Required package file is missing: " + required);
   }
   for (const required of ["examples/local-demo.mjs", "examples/demo-targets.mjs", "docs/local-demo.md", "examples/public-docs-registry.json", "docs/public-mcp-verification.md", "docs/selection-verification.md", "docs/model-target-verification.md", "docs/platform-compatibility.md", "docs/reference.md"]) {
@@ -124,6 +124,16 @@ try {
   assert.equal(await readFile(clientSource, "utf8"), sourceContents);
   const presetImport = await runCommand(executable, [...prefix, "preset", "import", "public-docs", "--select", "openai-docs", "--prefix", "packaged", "--apply"], { cwd: installation, env: environment });
   assert.equal(JSON.parse(presetImport.stdout).applied, true);
+  const comparedConfig = await runCommand(executable, [...prefix, "registry", "import-config", clientSource, "--compare", "--on-conflict", "skip"], { cwd: installation, env: environment });
+  assert.equal(JSON.parse(comparedConfig.stdout).comparison.counts.unchanged, 1);
+  assert.equal(JSON.parse(comparedConfig.stdout).applied, false);
+  const comparedPreset = await runCommand(executable, [...prefix, "preset", "show", "public-docs", "--select", "openai-docs", "--prefix", "packaged", "--compare", "--on-conflict", "skip"], { cwd: installation, env: environment });
+  assert.equal(JSON.parse(comparedPreset.stdout).comparison.counts.unchanged, 1);
+  const snapshotPath = join(directory, "comparison.json");
+  await writeFile(snapshotPath, JSON.stringify({ format: "agent-tcdh", version: 1, exportedAt: new Date().toISOString(), targets: [] }), "utf8");
+  const comparedSnapshot = await runCommand(executable, [...prefix, "registry", "diff", snapshotPath], { cwd: installation, env: environment });
+  assert.equal(JSON.parse(comparedSnapshot.stdout).counts.retained, 4);
+  assert.equal(JSON.parse(comparedSnapshot.stdout).applied, false);
   const doctor = await runCommand(executable, [...prefix, "doctor"], { cwd: installation, env: environment });
   assert.equal(JSON.parse(doctor.stdout).status, "passed");
   assert.equal(JSON.parse(doctor.stdout).executionVerified, false);
@@ -201,7 +211,7 @@ try {
   assert.ok(demoResult.executions.some((entry) => entry.transport === "stdio"));
   assert.equal(demoResult.remainingTargets.length, 2);
   console.log(JSON.stringify({ package: manifest.filename, isolatedProductionInstall: true,
-    installedBinary: true, onboarding: true, targetManagement: true, clientProfiles: true, batchDiagnostics: true, configImport: true, presets: true, documentation: true, targetDiagnostics: true, localDemo: true, initial, restarted, persistence: true }, null, 2));
+    installedBinary: true, onboarding: true, registryComparison: true, targetManagement: true, clientProfiles: true, batchDiagnostics: true, configImport: true, presets: true, documentation: true, targetDiagnostics: true, localDemo: true, initial, restarted, persistence: true }, null, 2));
 } finally {
   // 7. Clean up only the processes and temporary files created by this run.
   try {

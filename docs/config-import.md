@@ -64,8 +64,12 @@ The `public-docs` preset contains Cloudflare Docs, Context7, DeepWiki, Microsoft
 
 Presets are convenience collections, not a provider allowlist. Arbitrary MCP and A2A targets remain supported through the [normal definition and metadata import interfaces](reference.md#search-and-connection-definitions). Client configuration import currently converts MCP connections; it does not infer A2A endpoints from agent client settings.
 
+## Compare with the current hub
+
+Add `--compare` to configuration/preset previews for an online read-only comparison, or use `registry diff FILE` for a snapshot. [Registry comparison](registry-comparison.md) explains changed fields, policy-specific conflicts, detailed JSON, and consistency. Default previews remain offline. Comparison cannot be combined with `--apply`.
+
 ## Output and references
 
-Use `--json` for structured output in a terminal; redirected output is JSON by default. `applied` reports whether an import request completed. With `skip`, this may include entries the hub retained unchanged; inspect `result` for the actual counts. `hubConflictsChecked` is false for offline previews.
+Use `--json` for structured output in a terminal; redirected output is JSON by default. `applied` reports whether an import request completed. With `skip`, this may include entries the hub retained unchanged; inspect `result` for the actual counts. `hubConflictsChecked` is false for offline previews; online comparison marks observed destination conflicts but does not lock a later import.
 
 Hub URL and credential references use the [guided setup precedence](onboarding.md). `--hub URL` overrides the destination. Sources: [Codex MCP configuration](https://learn.chatgpt.com/docs/extend/mcp), [Codex configuration reference](https://learn.chatgpt.com/docs/config-file/config-reference), [OpenCode v2 MCP configuration](https://opencode.ai/v2/docs/mcp-servers/), and [OpenCode v1 MCP configuration](https://opencode.ai/docs/en/mcp-servers/).

@@ -19,8 +19,14 @@ export async function readSnapshot(path: string): Promise<RegistrySnapshot> {
   }
 
   // 2. Validate UTF-8 JSON, snapshot version, and target definitions.
-  const text = Buffer.concat(chunks).toString("utf8").replace(/^\uFEFF/u, "");
-  const snapshot = parseSnapshot(JSON.parse(text));
+  let input: unknown;
+  try {
+    const text = new TextDecoder("utf-8", { fatal: true }).decode(Buffer.concat(chunks)).replace(/^\uFEFF/u, "");
+    input = JSON.parse(text);
+  } catch {
+    throw new Error("Snapshot files must contain valid UTF-8 JSON. Source values were not printed.");
+  }
+  const snapshot = parseSnapshot(input);
   serializeSnapshot(snapshot);
   return snapshot;
 }

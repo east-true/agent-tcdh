@@ -33,10 +33,11 @@ Usage:
   agent-tcdh target list [--q QUERY] [--protocol mcp|a2a] [--tag TAG]
                        [--limit COUNT] [--offset OFFSET] [--include-disabled] [--hub URL]
   agent-tcdh target remove <ID> [--dry-run] [--if-match ETAG] [--hub URL]
-  agent-tcdh registry import-config <FILE> [--format FORMAT] [--select NAME ...] [--prefix PREFIX] [--apply]
+  agent-tcdh registry import-config <FILE> [--format FORMAT] [--select NAME ...] [--prefix PREFIX] [--apply | --compare] [--details]
   agent-tcdh preset list
-  agent-tcdh preset show <NAME> [--select ID ...]
-  agent-tcdh preset import <NAME> [--select ID ...] [--prefix PREFIX] [--apply]
+  agent-tcdh preset show <NAME> [--select ID ...] [--compare] [--details]
+  agent-tcdh preset import <NAME> [--select ID ...] [--prefix PREFIX] [--apply | --compare] [--details]
+  agent-tcdh registry diff <JSON_FILE> [--on-conflict error|skip|replace] [--details] [--hub URL]
   agent-tcdh registry export <JSON_FILE> [--overwrite] [--hub URL]
   agent-tcdh registry import <JSON_FILE> [--on-conflict error|skip|replace] [--dry-run] [--hub URL]
   agent-tcdh mcp [--hub URL] [--no-config] [--anonymous | --token-env VARIABLE]
@@ -54,6 +55,8 @@ Environment:
 
 Options:
   --help, -h            Show usage
+  --compare             Compare a config/preset preview with current hub metadata (read-only)
+  --details             Include full definitions and print JSON comparison output
   --apply               Apply a reviewed config/preset import; previews are the default
   --format FORMAT       Client config format: auto, codex, opencode, opencode-v1, mcp-json
   --select NAME         Repeat to select source server names or preset target ids
@@ -106,6 +109,8 @@ export async function runCli(args: string[]): Promise<void> {
       "no-config": { type: "boolean" },
       anonymous: { type: "boolean" },
       apply: { type: "boolean" },
+      compare: { type: "boolean" },
+      details: { type: "boolean" },
       format: { type: "string" },
       select: { type: "string", multiple: true },
       prefix: { type: "string" },
@@ -244,10 +249,12 @@ export async function runCli(args: string[]): Promise<void> {
   if (!["mcp", "target", "registry", "preset"].includes(command)) {
     throw new Error("Unknown command. Run --help for usage.");
   }
-  const metadataPreview = command === "target" && ["add", "import"].includes(positionals[1] ?? "") && values["dry-run"]
+  const metadataPreview = !values.compare && (command === "target" && ["add", "import"].includes(positionals[1] ?? "") && values["dry-run"]
     || command === "registry" && positionals[1] === "import-config" && !values.apply
-    || command === "preset" && (positionals[1] !== "import" || !values.apply);
-  const readCommand = command === "mcp" || command === "target" && (["list", "get", "check"].includes(positionals[1] ?? "")
+    || command === "preset" && (positionals[1] !== "import" || !values.apply));
+  const readCommand = command === "registry" && (positionals[1] === "diff" || positionals[1] === "import-config" && values.compare)
+    || command === "preset" && ["show", "import"].includes(positionals[1] ?? "") && values.compare
+    || command === "mcp" || command === "target" && (["list", "get", "check"].includes(positionals[1] ?? "")
     || ["refresh", "edit", "enable", "disable", "remove"].includes(positionals[1] ?? "") && values["dry-run"]);
   if (!readCommand && !metadataPreview && !values["token-env"] && config?.readTokenEnv && !config.tokenEnv && !process.env.AGENT_TCDH_TOKEN) {
     throw new Error("This setup has only read credentials. Select an administrator credential with --token-env for mutations.");
@@ -272,27 +279,35 @@ export async function runCli(args: string[]): Promise<void> {
       return;
     }
     if (action === "show" || action === "import") {
-      validateArguments(positionals, 3, values, action === "show" ? ["select", "prefix"] : ["hub", "select", "prefix", "apply", "dry-run", "on-conflict"]);
-      if (values.apply && values["dry-run"]) {
-        throw new Error("Choose either --apply or --dry-run.");
+      validateArguments(positionals, 3, values, action === "show" ? ["select", "prefix", "hub", "compare", "details", "on-conflict"] : ["hub", "select", "prefix", "apply", "dry-run", "on-conflict", "compare", "details"]);
+      if (values.apply && (values["dry-run"] || values.compare) || values.details && !values.compare) {
+        throw new Error("Choose either --apply or a preview (--compare/--dry-run). --details requires --compare.");
       }
       const preparation = await preparePreset(positionals[2]!, { select: values.select, prefix: values.prefix });
-      await finishPreparedImport(preparation, client, action === "import" && Boolean(values.apply), values["on-conflict"], values.json);
+      await finishPreparedImport(preparation, client, action === "import" && Boolean(values.apply), values["on-conflict"], values.json, values.compare, values.details);
       return;
     }
     throw new Error("Unknown preset command. Run preset list or --help.");
   }
   if (command === "registry") {
     const action = positionals[1];
+    if (action === "diff") {
+      validateArguments(positionals, 3, values, ["hub", "on-conflict", "details"]);
+      const { readSnapshot } = await import("./registry/files.js");
+      const { compareRegistry, formatComparison } = await import("./registry/diff.js");
+      const report = await compareRegistry(client, await readSnapshot(positionals[2]!), { onConflict: values["on-conflict"], details: values.details });
+      printOnboarding(report, values.json || values.details, () => formatComparison(report));
+      return;
+    }
     if (action === "import-config") {
-      validateArguments(positionals, 3, values, ["hub", "format", "select", "prefix", "apply", "dry-run", "on-conflict"]);
-      if (values.apply && values["dry-run"]) {
-        throw new Error("Choose either --apply or --dry-run.");
+      validateArguments(positionals, 3, values, ["hub", "format", "select", "prefix", "apply", "dry-run", "on-conflict", "compare", "details"]);
+      if (values.apply && (values["dry-run"] || values.compare) || values.details && !values.compare) {
+        throw new Error("Choose either --apply or a preview (--compare/--dry-run). --details requires --compare.");
       }
       const { inspectConfigFile, sourceFormatSchema } = await import("./onboarding/import-config.js");
       const preparation = await inspectConfigFile(positionals[2]!, { format: sourceFormatSchema.parse(values.format ?? "auto"),
         select: values.select, prefix: values.prefix, hub });
-      await finishPreparedImport(preparation, client, Boolean(values.apply), values["on-conflict"], values.json);
+      await finishPreparedImport(preparation, client, Boolean(values.apply), values["on-conflict"], values.json, values.compare, values.details);
       return;
     }
     if (action === "export") {
@@ -444,24 +459,29 @@ export async function runCli(args: string[]): Promise<void> {
 /** Preview prepared connection metadata or submit one atomic import after explicit application. */
 async function finishPreparedImport<T extends {
   ready: boolean; targets: TargetDefinition[]; selected: number; converted: number;
-  issues: ImportIssue[]; requiredEnvironmentVariables: string[];
-}>(preparation: T, client: HubClient, apply: boolean, onConflict: string | undefined, json: boolean | undefined): Promise<void> {
+  issues: ImportIssue[]; requiredEnvironmentVariables: string[]; metadataAsOf?: string;
+}>(preparation: T, client: HubClient, apply: boolean, onConflict: string | undefined, json: boolean | undefined,
+  compare?: boolean, details?: boolean): Promise<void> {
   // 1. Preserve the existing conflict policy and refuse partial application of blocked plans.
   const { importOptionsSchema } = await import("./registry/schema.js");
   const { preparedSnapshot } = await import("./onboarding/import-config.js");
   const options = importOptionsSchema.parse({ onConflict, dryRun: false });
-  const result = apply && preparation.ready ? await client.importRegistry(preparedSnapshot(preparation.targets), options) : undefined;
+  const result = apply && preparation.ready ? await client.importRegistry(preparedSnapshot(preparation.targets, preparation.metadataAsOf), options) : undefined;
+  const { compareRegistry, formatComparison } = await import("./registry/diff.js");
+  const comparison = compare && preparation.ready ? await compareRegistry(client, preparedSnapshot(preparation.targets, preparation.metadataAsOf), { onConflict, details }) : undefined;
+  const ready = preparation.ready && (comparison?.importReady ?? true);
 
   // 2. Print only the prepared definitions and fixed diagnostics, never the original source file.
-  const report = { ...preparation, applied: result !== undefined, onConflict: options.onConflict,
-    hubConflictsChecked: result !== undefined, ...(result ? { result } : {}) };
-  printOnboarding(report, json, () => preparation.converted + "/" + preparation.selected + " selected connections prepared. "
-    + (result ? "Applied to the hub." : preparation.ready ? "Preview only; no hub changes. Use the import command with --apply to register." : "Not ready; resolve the listed errors or select supported entries.")
+  const report = { ...preparation, ready, applied: result !== undefined, onConflict: options.onConflict,
+    hubConflictsChecked: result !== undefined || comparison !== undefined, ...(result ? { result } : {}), ...(comparison ? { comparison } : {}) };
+  printOnboarding(report, json || details, () => preparation.converted + "/" + preparation.selected + " selected connections prepared. "
+    + (result ? "Applied to the hub." : ready ? "Preview only; no hub changes. Use the import command with --apply to register." : "Not ready; resolve source errors or destination conflicts.")
     + "\n" + preparation.targets.map((target) => target.id + " (" + target.connection.transport + ")").join("\n")
     + "\n" + preparation.issues.map((issue) => issue.severity.toUpperCase() + " " + JSON.stringify(issue.name) + " " + issue.code + ": " + issue.message).join("\n")
     + (preparation.requiredEnvironmentVariables.length ? "\nRequired in the consuming environment: " + preparation.requiredEnvironmentVariables.join(", ") : "")
+    + (comparison ? "\n" + formatComparison(comparison) : "")
     + "\nNo target connections or executions were performed.");
-  if (!preparation.ready) {
+  if (!ready) {
     process.exitCode = 1;
   }
 }

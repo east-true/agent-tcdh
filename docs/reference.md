@@ -4,7 +4,7 @@ CLI, connection definitions, protocol details, authentication, and deployment se
 
 ## CLI
 
-The upcoming `init`, quick-add, `connect`, and `doctor` commands on `main` are documented in [guided setup](onboarding.md), including [batch diagnostics](onboarding.md#inspect-multiple-registrations). They are not included in npm `0.1.1`. Configuration import and packaged preset commands on `main` are documented in [configuration import and presets](config-import.md). Additional client profiles are covered in [more MCP client connections](client-connections.md). File-free edit/state commands and deletion previews are covered in [target management](target-management.md). Existing CLI commands also accept `--config FILE` setup defaults and `--json` on `main`.
+The upcoming `init`, quick-add, `connect`, and `doctor` commands on `main` are documented in [guided setup](onboarding.md), including [batch diagnostics](onboarding.md#inspect-multiple-registrations). They are not included in npm `0.1.1`. Configuration import and packaged preset commands on `main` are documented in [configuration import and presets](config-import.md). Additional client profiles are covered in [more MCP client connections](client-connections.md). File-free edit/state commands and deletion previews are covered in [target management](target-management.md). Read-only snapshot/config/preset comparisons are covered in [registry comparison](registry-comparison.md). Existing CLI commands also accept `--config FILE` setup defaults and `--json` on `main`.
 
 ```text
 agent-tcdh serve [--host HOST] [--port PORT] [--db FILE]
