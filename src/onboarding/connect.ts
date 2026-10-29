@@ -1,3 +1,5 @@
+import { access } from "node:fs/promises";
+import { fileURLToPath } from "node:url";
 import { isDeepStrictEqual } from "node:util";
 import { parse as parseToml, stringify as stringifyToml } from "smol-toml";
 import { applyEdits, modify, parse as parseJsonc, type ParseError } from "jsonc-parser";
@@ -5,8 +7,30 @@ import { z } from "zod";
 import { envNameSchema, normalizeHub } from "./config.js";
 import { readConfigText, writeConfigText } from "./files.js";
 
-export const connectionClientSchema = z.enum(["codex", "opencode", "opencode-v1"]);
+export const connectionClientSchema = z.enum(["codex", "opencode", "opencode-v1", "claude-code", "gemini-cli", "cursor", "vscode"]);
 export type ConnectionClient = z.infer<typeof connectionClientSchema>;
+
+/** Identify profiles that launch the existing local discovery bridge. */
+function usesBridge(client: ConnectionClient): boolean {
+  return !["codex", "opencode", "opencode-v1"].includes(client);
+}
+
+/** Generate a local Node invocation with client-specific environment references and isolated bridge settings. */
+function bridgeEntry(client: ConnectionClient, hub: string, tokenEnv?: string) {
+  // 1. Pin this installation and the selected hub without relying on shell shims or personal setup files.
+  const command = process.execPath;
+  const entry = fileURLToPath(new URL("../../dist/index.js", import.meta.url));
+  if ([command, entry, hub].some((value) => value.includes("${"))) {
+    throw new Error("Bridge paths and hub URLs must not contain client interpolation expressions.");
+  }
+  const args = [entry, "mcp", "--hub", normalizeHub(hub), "--no-config",
+    ...(tokenEnv ? ["--token-env", tokenEnv] : ["--anonymous"])];
+
+  // 2. Pass only the selected variable explicitly, keeping its value in the consuming client environment.
+  const reference = client === "cursor" || client === "vscode" ? "${env:" : "${";
+  return { ...(client === "gemini-cli" ? {} : { type: "stdio" }), command, args,
+    ...(tokenEnv ? { env: { [tokenEnv]: reference + tokenEnv + "}" } } : {}) };
+}
 
 /** Require an object-shaped configuration container before merging a named server. */
 function object(value: unknown): Record<string, unknown> {
@@ -56,13 +80,14 @@ export function mergeConnection(
   const url = normalizeHub(hub) + "/mcp";
   const entry = client === "codex"
     ? { url, ...(tokenEnv ? { bearer_token_env_var: tokenEnv } : {}) }
-    : { type: "remote", url, oauth: false, ...(tokenEnv ? { headers: { Authorization: "Bearer {env:" + tokenEnv + "}" } } : {}) };
+    : usesBridge(client) ? bridgeEntry(client, hub, tokenEnv)
+      : { type: "remote", url, oauth: false, ...(tokenEnv ? { headers: { Authorization: "Bearer {env:" + tokenEnv + "}" } } : {}) };
 
   // 2. Preserve TOML text when appending; require explicit replacement before normalization or a collision.
   if (client === "codex") {
     const root = toml(existing);
     const servers = root.mcp_servers === undefined ? {} : object(root.mcp_servers);
-    const previous = servers[name];
+    const previous = Object.hasOwn(servers, name) ? servers[name] : undefined;
     if (previous !== undefined && sameValue(previous, entry)) {
       return { content: existing, notes: [] };
     }
@@ -97,37 +122,53 @@ export function mergeConnection(
     return { content: stringifyToml(root), notes: ["TOML formatting and comments are normalized; the original file is preserved in the backup."] };
   }
 
-  // 3. Edit JSONC at the exact server path, preserving comments and neighboring settings.
+  // 3. Edit JSONC at the exact server path, preserving comments, the BOM, and neighboring settings.
   const errors: ParseError[] = [];
-  const text = existing.trim() ? existing : "{}\n";
+  const bom = existing.startsWith("\uFEFF") ? "\uFEFF" : "";
+  const text = (existing.trim() ? existing : "{}\n").replace(/^\uFEFF/u, "");
   const root = object(parseJsonc(text, errors, { allowTrailingComma: true }));
   if (errors.length > 0) {
     throw new Error("Invalid JSON/JSONC configuration. Fix it before adding the hub.");
   }
-  const mcp = root.mcp === undefined ? {} : object(root.mcp);
-  if (client === "opencode" && Object.entries(mcp).some(([key, value]) => key !== "servers"
-    && value && typeof value === "object" && "type" in value)) {
-    throw new Error("This file uses OpenCode v1 server layout. Select opencode-v1 or migrate it first.");
+  let servers: Record<string, unknown>;
+  let path: string[];
+  let expected: Record<string, unknown>;
+  if (client === "opencode" || client === "opencode-v1") {
+    const mcp = root.mcp === undefined ? {} : object(root.mcp);
+    if (client === "opencode" && Object.entries(mcp).some(([key, value]) => key !== "servers"
+      && value && typeof value === "object" && "type" in value)) {
+      throw new Error("This file uses OpenCode v1 server layout. Select opencode-v1 or migrate it first.");
+    }
+    if (client === "opencode-v1" && mcp.servers !== undefined && !["remote", "local"].includes(String(object(mcp.servers).type))) {
+      throw new Error("This file uses OpenCode v2 server layout. Select opencode.");
+    }
+    servers = client === "opencode" ? (mcp.servers === undefined ? {} : object(mcp.servers)) : mcp;
+    path = client === "opencode" ? ["mcp", "servers", name] : ["mcp", name];
+    expected = { ...root, mcp: client === "opencode" ? { ...mcp, servers: { ...servers, [name]: entry } } : { ...mcp, [name]: entry } };
+  } else {
+    const key = client === "vscode" ? "servers" : "mcpServers";
+    const alternate = client === "vscode" ? "mcpServers" : "servers";
+    if (root[key] === undefined && root[alternate] !== undefined) {
+      throw new Error("This file uses a different MCP server container. Select the matching client profile or choose another file.");
+    }
+    servers = root[key] === undefined ? {} : object(root[key]);
+    path = [key, name];
+    expected = { ...root, [key]: { ...servers, [name]: entry } };
   }
-  if (client === "opencode-v1" && mcp.servers !== undefined && !["remote", "local"].includes(String(object(mcp.servers).type))) {
-    throw new Error("This file uses OpenCode v2 server layout. Select opencode.");
+  const previous = Object.hasOwn(servers, name) ? servers[name] : undefined;
+  if (previous !== undefined && sameValue(previous, entry)) {
+    return { content: bom + text, notes: [] };
   }
-  const servers = client === "opencode" ? (mcp.servers === undefined ? {} : object(mcp.servers)) : mcp;
-  if (servers[name] !== undefined && sameValue(servers[name], entry)) {
-    return { content: text, notes: [] };
-  }
-  if (servers[name] !== undefined && !replace) {
+  if (previous !== undefined && !replace) {
     throw new Error("This hub entry already exists with different settings. Use --replace to update only the named server.");
   }
-  const path = client === "opencode" ? ["mcp", "servers", name] : ["mcp", name];
   const content = applyEdits(text, modify(text, path, entry, { formattingOptions: { insertSpaces: true, tabSize: 2, eol: "\n" } }));
   const validation: ParseError[] = [];
   const actual = parseJsonc(content, validation, { allowTrailingComma: true });
-  const expected = { ...root, mcp: client === "opencode" ? { ...mcp, servers: { ...servers, [name]: entry } } : { ...mcp, [name]: entry } };
   if (validation.length || !sameValue(actual, expected)) {
     throw new Error("Unable to merge this JSONC layout. Use the generated fragment instead.");
   }
-  return { content: content.endsWith("\n") ? content : content + "\n", notes: [] };
+  return { content: bom + content + (content.endsWith("\n") ? "" : "\n"), notes: [] };
 }
 
 /** Preview a hub configuration or explicitly merge it into a chosen file with a backup. */
@@ -136,12 +177,20 @@ export async function connectClient(options: {
   replace?: boolean | undefined; name?: string | undefined; dryRun?: boolean | undefined;
 }) {
   const client = connectionClientSchema.parse(options.client);
+  if (usesBridge(client)) {
+    try {
+      await access(fileURLToPath(new URL("../../dist/index.js", import.meta.url)));
+    } catch {
+      throw new Error("Build the CLI with npm run build before generating a local bridge connection.");
+    }
+  }
   const existing = options.write ? await readConfigText(options.write) : undefined;
   const merged = mergeConnection(client, options.hub, options.tokenEnv, existing, options.replace, options.name);
   const result = options.write && !options.dryRun ? await writeConfigText(options.write, merged.content, existing)
     : { changed: merged.content !== existing, ...(options.write ? { path: options.write } : {}) };
   return { client, hub: normalizeHub(options.hub), ...result, dryRun: Boolean(options.dryRun),
-    ...(!options.write || options.dryRun ? { content: mergeConnection(client, options.hub, options.tokenEnv, undefined, false, options.name).content } : {}), notes: merged.notes,
+    ...(!options.write || options.dryRun ? { content: mergeConnection(client, options.hub, options.tokenEnv, undefined, false, options.name).content } : {}), transport: usesBridge(client) ? "stdio" : "streamable-http",
+    notes: [...merged.notes, ...(usesBridge(client) ? ["This profile launches the existing local discovery bridge. Generated Node/package paths belong to this machine; regenerate after moving the installation or changing execution environments."] : [])],
     requiredEnvironmentVariables: options.tokenEnv ? [options.tokenEnv] : [],
     instructions: "Use AgentTCDH search_targets to find capabilities, then get_target to retrieve current connection details. "
       + "Connect directly to the selected MCP server or A2A agent using this client's protocol support, target credentials, and execution permissions. "

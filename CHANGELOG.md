@@ -2,6 +2,9 @@
 
 ## Unreleased
 
+- Add Claude Code, Gemini CLI, Cursor, and VS Code connection profiles backed by the local discovery bridge, with client-specific credential references and isolated bridge configuration.
+- Preserve UTF-8 BOMs when merging JSONC client settings and exclude exact generated self-bridges during portable client configuration import.
+
 - Add `doctor --all` with discovery filters, a pre-inspection selection cap, bounded concurrency, and versioned per-target prerequisite/metadata reports.
 
 - Add offline-first MCP configuration import from Codex, OpenCode v1/v2, and portable `mcpServers` JSON/JSONC, with selection, namespacing, and atomic opt-in application.

@@ -4,7 +4,7 @@ CLI, connection definitions, protocol details, authentication, and deployment se
 
 ## CLI
 
-The upcoming `init`, quick-add, `connect`, and `doctor` commands on `main` are documented in [guided setup](onboarding.md), including [batch diagnostics](onboarding.md#inspect-multiple-registrations). They are not included in npm `0.1.1`. Configuration import and packaged preset commands on `main` are documented in [configuration import and presets](config-import.md). Existing CLI commands also accept `--config FILE` setup defaults and `--json` on `main`.
+The upcoming `init`, quick-add, `connect`, and `doctor` commands on `main` are documented in [guided setup](onboarding.md), including [batch diagnostics](onboarding.md#inspect-multiple-registrations). They are not included in npm `0.1.1`. Configuration import and packaged preset commands on `main` are documented in [configuration import and presets](config-import.md). Additional client profiles are covered in [more MCP client connections](client-connections.md). Existing CLI commands also accept `--config FILE` setup defaults and `--json` on `main`.
 
 ```text
 agent-tcdh serve [--host HOST] [--port PORT] [--db FILE]
@@ -24,7 +24,7 @@ agent-tcdh mcp [--hub URL]
 
 The default command is `serve`. Successful administrative commands print JSON; failures print diagnostics to stderr and exit with code 1. `target check` also prints failed/skipped reports as JSON and uses the exit codes below. Use `--help` for all options.
 
-HTTP client commands and `mcp` accept `--token-env VARIABLE`, defaulting to `AGENT_TCDH_TOKEN`. An explicitly selected empty variable fails without falling back to another credential. `serve` uses server environment variables instead.
+HTTP client commands and `mcp` accept `--token-env VARIABLE`, defaulting to `AGENT_TCDH_TOKEN`. An explicitly selected empty variable fails without falling back to another credential. `serve` uses server environment variables instead. On `main`, the stdio `mcp` bridge also accepts `--no-config` to ignore setup files and `--anonymous` to avoid resolving inherited credentials; see the [client guide](client-connections.md#pass-a-selected-credential).
 
 Updates replace the complete definition. Set `enabled: false` to disable a target. Default searches exclude disabled targets; direct lookup and `--include-disabled` still expose their metadata.
 

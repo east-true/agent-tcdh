@@ -110,6 +110,8 @@ Reload the agent after applying settings. The normal `connect` result also inclu
 
 Configuration formats were checked against [Codex MCP documentation](https://learn.chatgpt.com/docs/extend/mcp), [OpenCode v2 MCP documentation](https://opencode.ai/v2/docs/mcp-servers/), and [OpenCode v1 documentation](https://opencode.ai/docs/en/mcp-servers/) on 2026-10-29. Templates and merging are tested with local fixtures; these checks do not claim new model-driven agent executions.
 
+Additional `claude-code`, `gemini-cli`, `cursor`, and `vscode` profiles generate local stdio discovery connections. See [more MCP client connections](client-connections.md) for explicit file destinations, environment references, machine-specific paths, and the SDK verification scope.
+
 ## Diagnose problems
 
 ```sh
