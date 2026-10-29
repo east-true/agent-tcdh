@@ -33,26 +33,30 @@ The consumer owns target selection, protocol clients, credentials, and execution
 
 ## Quickstart
 
-Use **Node.js 24 or newer** and npm. This checkout targets **v0.1.2**. Run the current version from source:
+Use **Node.js 24 or newer** and npm. Install the published release:
+
+```sh
+npm install --global agent-tcdh@0.1.2
+agent-tcdh init
+agent-tcdh serve
+```
+
+For a hub without global installation:
+
+```sh
+npx --yes agent-tcdh@0.1.2 serve
+```
+
+To run the isolated demo from source:
 
 ```sh
 git clone https://github.com/jiind/agent-tcdh.git
 cd agent-tcdh
 npm ci
-npm run build
-node dist/index.js init
-node dist/index.js serve
+npm run demo
 ```
 
-`init` saves settings; `serve` starts the hub. For an isolated demonstration instead, run `npm run demo` after installing dependencies.
-
-The already published `0.1.1` package still supports the original CLI:
-
-```sh
-npx --yes agent-tcdh@0.1.1 serve
-```
-
-The [v0.1.2 notes](docs/releases/v0.1.2.md) describe the new features, local artifact installation, and publication checks. The [v0.1.1 GitHub release](https://github.com/jiind/agent-tcdh/releases/tag/v0.1.1) provides that earlier version's built tarball. GitHub and npm publication are separate from source preparation; verify availability before installing a new published version. Source commands below use the repository checkout; an installed CLI uses `agent-tcdh` in place of `npm run cli --` or `node dist/index.js`.
+The [v0.1.2 GitHub release](https://github.com/jiind/agent-tcdh/releases/tag/v0.1.2) provides the built tarball, source manifest, and checksums. See the [release notes](docs/releases/v0.1.2.md) for features and verification scope. Source commands below use the repository checkout; an installed CLI uses `agent-tcdh` in place of `npm run cli --` or `node dist/index.js`.
 
 The demo starts an isolated hub, registers three local targets, discovers them, and calls HTTP MCP, stdio MCP, and A2A targets directly. It checks execution receipts and cleans up. No account, API key, external service, or model is needed.
 
@@ -85,7 +89,7 @@ These are working examples, not a provider allowlist. Register other MCP servers
 
 ## Guided setup in v0.1.2
 
-Version `0.1.2` adds guided setup, file-free registration, seven connection profiles, configuration import, presets, diagnostics, target editing, and registry comparison. Use this source checkout or a prepared `0.1.2` package; npm `0.1.1` does not include these commands.
+Version `0.1.2` adds guided setup, file-free registration, seven connection profiles, configuration import, presets, diagnostics, target editing, and registry comparison. Use the published `0.1.2` package or this source checkout; earlier `0.1.1` installations do not include these commands.
 
 ```sh
 npm run build
