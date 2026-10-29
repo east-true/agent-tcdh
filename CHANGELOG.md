@@ -2,6 +2,9 @@
 
 ## Unreleased
 
+- Add file-free `target edit`, `enable`, and `disable` with before/after previews, idempotent no-ops, and automatic conditional writes.
+- Add read-only `target remove --dry-run` reports with the reviewed registration version for guarded deletion.
+
 - Add Claude Code, Gemini CLI, Cursor, and VS Code connection profiles backed by the local discovery bridge, with client-specific credential references and isolated bridge configuration.
 - Preserve UTF-8 BOMs when merging JSONC client settings and exclude exact generated self-bridges during portable client configuration import.
 

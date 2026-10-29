@@ -117,9 +117,13 @@ node dist/index.js registry import-config /path/to/config.toml --select docs --a
 node dist/index.js preset list
 node dist/index.js preset import public-docs --select openai-docs --apply
 node dist/index.js doctor --all --tag imported-config
+node dist/index.js target edit openai-docs --add-tag team-docs --dry-run
+node dist/index.js target disable openai-docs --dry-run
 ```
 
 Configuration imports and presets default to offline previews; `--apply` registers the selected connections atomically. Import preserves the source file, replaces known inline environment/Bearer values with variable references, and reports unsupported settings. Review literal command arguments before applying. `doctor --all` explicitly inspects matching registrations with bounded concurrency and per-target results; it fetches remote metadata without executing tools/tasks. See [configuration import and presets](docs/config-import.md) for formats, conflicts, and consumer-side credentials.
+
+Edit labels/tags or enable/disable registrations without rewriting JSON files. Use `--dry-run` to review changes; new edit/state commands save against the observed registration version. See [target management](docs/target-management.md) for conflict handling and deletion previews.
 
 ## MCP discovery
 

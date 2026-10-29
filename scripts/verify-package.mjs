@@ -48,7 +48,7 @@ try {
   const [manifest] = manifests;
   assert.equal(manifest.name, "agent-tcdh");
   const files = new Set(manifest.files.map((entry) => entry.path));
-  for (const required of ["dist/index.js", "dist/onboarding/connect.js", "dist/onboarding/doctor.js", "dist/onboarding/doctor-batch.js", "docs/onboarding.md", "docs/client-connections.md", "dist/onboarding/import-config.js", "dist/onboarding/presets.js", "docs/config-import.md", "dist/app.js", "dist/a2a-http.js", "dist/targets/check.js", "docs/agent-compatibility.md", "docs/agent-verification.md", "examples/a2a.json", "README.md", "LICENSE", "CONTRIBUTING.md", "SECURITY.md", "CHANGELOG.md"]) {
+  for (const required of ["dist/index.js", "dist/onboarding/connect.js", "dist/onboarding/doctor.js", "dist/onboarding/doctor-batch.js", "docs/onboarding.md", "docs/client-connections.md", "dist/onboarding/import-config.js", "dist/onboarding/presets.js", "docs/config-import.md", "dist/app.js", "dist/a2a-http.js", "dist/targets/check.js", "dist/targets/edit.js", "docs/target-management.md", "docs/agent-compatibility.md", "docs/agent-verification.md", "examples/a2a.json", "README.md", "LICENSE", "CONTRIBUTING.md", "SECURITY.md", "CHANGELOG.md"]) {
     assert.ok(files.has(required), "Required package file is missing: " + required);
   }
   for (const required of ["examples/local-demo.mjs", "examples/demo-targets.mjs", "docs/local-demo.md", "examples/public-docs-registry.json", "docs/public-mcp-verification.md", "docs/selection-verification.md", "docs/model-target-verification.md", "docs/platform-compatibility.md", "docs/reference.md"]) {
@@ -164,6 +164,17 @@ try {
   assert.equal(diagnostic.scope, "mcp-tools-list");
   assert.equal(diagnostic.executionVerified, false);
 
+  const editPreview = await runCommand(executable, [...prefix, "target", "edit", "packaged-local", "--name", "Managed local connection", "--add-tag", "package-managed", "--dry-run"], { cwd: installation, env: environment });
+  assert.equal(JSON.parse(editPreview.stdout).applied, false);
+  const edited = await runCommand(executable, [...prefix, "target", "edit", "packaged-local", "--name", "Managed local connection", "--add-tag", "package-managed", "--if-match", JSON.parse(editPreview.stdout).baseVersion], { cwd: installation, env: environment });
+  assert.equal(JSON.parse(edited.stdout).applied, true);
+  const disabled = await runCommand(executable, [...prefix, "target", "disable", "packaged-local"], { cwd: installation, env: environment });
+  assert.equal(JSON.parse(disabled.stdout).target.enabled, false);
+  const unchanged = await runCommand(executable, [...prefix, "target", "disable", "packaged-local"], { cwd: installation, env: environment });
+  assert.equal(JSON.parse(unchanged.stdout).applied, false);
+  const removalPreview = await runCommand(executable, [...prefix, "target", "remove", "packaged-local", "--dry-run"], { cwd: installation, env: environment });
+  assert.equal(JSON.parse(removalPreview.stdout).applied, false);
+
   // 5. Restart with the same database and verify registration and discovery again.
   await stopServer();
   await startServer();
@@ -172,6 +183,14 @@ try {
     const persisted = await runCommand(executable, [...prefix, "target", "get", id], { cwd: installation, env: environment });
     assert.equal(JSON.parse(persisted.stdout).id, id);
   }
+
+  const managed = await runCommand(executable, [...prefix, "target", "get", "packaged-local"], { cwd: installation, env: environment });
+  const managedTarget = JSON.parse(managed.stdout);
+  assert.equal(managedTarget.name, "Managed local connection");
+  assert.ok(managedTarget.tags.includes("package-managed"));
+  assert.equal(managedTarget.enabled, false);
+  const enabled = await runCommand(executable, [...prefix, "target", "enable", "packaged-local"], { cwd: installation, env: environment });
+  assert.equal(JSON.parse(enabled.stdout).target.enabled, true);
 
   // 6. Run stdio and A2A direct-call examples with production dependencies only.
   const demo = await runCommand(process.execPath, [join(installed, "examples/local-demo.mjs"), "--discovery", "a2a"], {
@@ -182,7 +201,7 @@ try {
   assert.ok(demoResult.executions.some((entry) => entry.transport === "stdio"));
   assert.equal(demoResult.remainingTargets.length, 2);
   console.log(JSON.stringify({ package: manifest.filename, isolatedProductionInstall: true,
-    installedBinary: true, onboarding: true, clientProfiles: true, batchDiagnostics: true, configImport: true, presets: true, documentation: true, targetDiagnostics: true, localDemo: true, initial, restarted, persistence: true }, null, 2));
+    installedBinary: true, onboarding: true, targetManagement: true, clientProfiles: true, batchDiagnostics: true, configImport: true, presets: true, documentation: true, targetDiagnostics: true, localDemo: true, initial, restarted, persistence: true }, null, 2));
 } finally {
   // 7. Clean up only the processes and temporary files created by this run.
   try {
