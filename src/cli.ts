@@ -6,6 +6,8 @@ import { readClientToken } from "./auth.js";
 import { a2aSelectionSchema } from "./targets/a2a.js";
 import { loadConfig, consumerTokenEnv } from "./onboarding/config.js";
 import { formatCommand, printOnboarding, targetTable } from "./onboarding/output.js";
+import type { TargetDefinition } from "./targets/schema.js";
+import type { ImportIssue } from "./onboarding/import-config.js";
 
 const help = `AgentTCDH — Agent & Tool Capability Discovery Hub
 
@@ -25,6 +27,10 @@ Usage:
   agent-tcdh target list [--q QUERY] [--protocol mcp|a2a] [--tag TAG]
                        [--limit COUNT] [--offset OFFSET] [--include-disabled] [--hub URL]
   agent-tcdh target remove <ID> [--if-match ETAG] [--hub URL]
+  agent-tcdh registry import-config <FILE> [--format FORMAT] [--select NAME ...] [--prefix PREFIX] [--apply]
+  agent-tcdh preset list
+  agent-tcdh preset show <NAME> [--select ID ...]
+  agent-tcdh preset import <NAME> [--select ID ...] [--prefix PREFIX] [--apply]
   agent-tcdh registry export <JSON_FILE> [--overwrite] [--hub URL]
   agent-tcdh registry import <JSON_FILE> [--on-conflict error|skip|replace] [--dry-run] [--hub URL]
   agent-tcdh mcp [--hub URL]
@@ -42,6 +48,10 @@ Environment:
 
 Options:
   --help, -h            Show usage
+  --apply               Apply a reviewed config/preset import; previews are the default
+  --format FORMAT       Client config format: auto, codex, opencode, opencode-v1, mcp-json
+  --select NAME         Repeat to select source server names or preset target ids
+  --prefix PREFIX       Namespace imported target ids
   --config FILE         Use setup defaults; flags override environment, then configuration
   --json                Print JSON, including in a terminal; redirected output defaults to JSON
   --remote              Initialize client settings for an existing hub
@@ -81,6 +91,10 @@ export async function runCli(args: string[]): Promise<void> {
     options: {
       help: { type: "boolean", short: "h" },
       config: { type: "string" },
+      apply: { type: "boolean" },
+      format: { type: "string" },
+      select: { type: "string", multiple: true },
+      prefix: { type: "string" },
       json: { type: "boolean" },
       yes: { type: "boolean" },
       remote: { type: "boolean" },
@@ -195,10 +209,12 @@ export async function runCli(args: string[]): Promise<void> {
   }
 
   // 5. Share the authenticated registry API with existing CLI and MCP commands.
-  if (!["mcp", "target", "registry"].includes(command)) {
+  if (!["mcp", "target", "registry", "preset"].includes(command)) {
     throw new Error("Unknown command. Run --help for usage.");
   }
-  const metadataPreview = command === "target" && ["add", "import"].includes(positionals[1] ?? "") && values["dry-run"];
+  const metadataPreview = command === "target" && ["add", "import"].includes(positionals[1] ?? "") && values["dry-run"]
+    || command === "registry" && positionals[1] === "import-config" && !values.apply
+    || command === "preset" && (positionals[1] !== "import" || !values.apply);
   const readCommand = command === "mcp" || command === "target" && (["list", "get", "check"].includes(positionals[1] ?? "")
     || positionals[1] === "refresh" && values["dry-run"]);
   if (!readCommand && !metadataPreview && !values["token-env"] && config?.readTokenEnv && !config.tokenEnv && !process.env.AGENT_TCDH_TOKEN) {
@@ -213,8 +229,40 @@ export async function runCli(args: string[]): Promise<void> {
     await runDiscoveryServer(client);
     return;
   }
+  if (command === "preset") {
+    const action = positionals[1];
+    const { listPresets, preparePreset } = await import("./onboarding/presets.js");
+    if (action === "list") {
+      validateArguments(positionals, 2, values, []);
+      const presets = await listPresets();
+      printOnboarding({ presets }, values.json, () => presets.map((preset) => preset.id + ": " + preset.targets + " targets\n  " + preset.description
+        + "\n  Select: " + preset.targetIds.join(", ") + "\n  Metadata as of: " + preset.metadataAsOf).join("\n"));
+      return;
+    }
+    if (action === "show" || action === "import") {
+      validateArguments(positionals, 3, values, action === "show" ? ["select", "prefix"] : ["hub", "select", "prefix", "apply", "dry-run", "on-conflict"]);
+      if (values.apply && values["dry-run"]) {
+        throw new Error("Choose either --apply or --dry-run.");
+      }
+      const preparation = await preparePreset(positionals[2]!, { select: values.select, prefix: values.prefix });
+      await finishPreparedImport(preparation, client, action === "import" && Boolean(values.apply), values["on-conflict"], values.json);
+      return;
+    }
+    throw new Error("Unknown preset command. Run preset list or --help.");
+  }
   if (command === "registry") {
     const action = positionals[1];
+    if (action === "import-config") {
+      validateArguments(positionals, 3, values, ["hub", "format", "select", "prefix", "apply", "dry-run", "on-conflict"]);
+      if (values.apply && values["dry-run"]) {
+        throw new Error("Choose either --apply or --dry-run.");
+      }
+      const { inspectConfigFile, sourceFormatSchema } = await import("./onboarding/import-config.js");
+      const preparation = await inspectConfigFile(positionals[2]!, { format: sourceFormatSchema.parse(values.format ?? "auto"),
+        select: values.select, prefix: values.prefix, hub });
+      await finishPreparedImport(preparation, client, Boolean(values.apply), values["on-conflict"], values.json);
+      return;
+    }
     if (action === "export") {
       validateArguments(positionals, 3, values, ["hub", "overwrite"]);
       const { writeSnapshot } = await import("./registry/files.js");
@@ -342,6 +390,31 @@ export async function runCli(args: string[]): Promise<void> {
   }
 
   throw new Error("Unknown target command. Run --help for usage.");
+}
+
+/** Preview prepared connection metadata or submit one atomic import after explicit application. */
+async function finishPreparedImport<T extends {
+  ready: boolean; targets: TargetDefinition[]; selected: number; converted: number;
+  issues: ImportIssue[]; requiredEnvironmentVariables: string[];
+}>(preparation: T, client: HubClient, apply: boolean, onConflict: string | undefined, json: boolean | undefined): Promise<void> {
+  // 1. Preserve the existing conflict policy and refuse partial application of blocked plans.
+  const { importOptionsSchema } = await import("./registry/schema.js");
+  const { preparedSnapshot } = await import("./onboarding/import-config.js");
+  const options = importOptionsSchema.parse({ onConflict, dryRun: false });
+  const result = apply && preparation.ready ? await client.importRegistry(preparedSnapshot(preparation.targets), options) : undefined;
+
+  // 2. Print only the prepared definitions and fixed diagnostics, never the original source file.
+  const report = { ...preparation, applied: result !== undefined, onConflict: options.onConflict,
+    hubConflictsChecked: result !== undefined, ...(result ? { result } : {}) };
+  printOnboarding(report, json, () => preparation.converted + "/" + preparation.selected + " selected connections prepared. "
+    + (result ? "Applied to the hub." : preparation.ready ? "Preview only; no hub changes. Use the import command with --apply to register." : "Not ready; resolve the listed errors or select supported entries.")
+    + "\n" + preparation.targets.map((target) => target.id + " (" + target.connection.transport + ")").join("\n")
+    + "\n" + preparation.issues.map((issue) => issue.severity.toUpperCase() + " " + JSON.stringify(issue.name) + " " + issue.code + ": " + issue.message).join("\n")
+    + (preparation.requiredEnvironmentVariables.length ? "\nRequired in the consuming environment: " + preparation.requiredEnvironmentVariables.join(", ") : "")
+    + "\nNo target connections or executions were performed.");
+  if (!preparation.ready) {
+    process.exitCode = 1;
+  }
 }
 
 /** Validate positional argument counts and supported options for each command. */

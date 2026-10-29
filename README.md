@@ -89,7 +89,7 @@ These are working examples, not a provider allowlist. Register other MCP servers
 
 ## Guided setup on main
 
-The next release adds guided setup, file-free registration, client configuration generation, and diagnostics. These commands are available from a source checkout on `main`; published npm `0.1.1` uses the original CLI.
+The next release adds guided setup, file-free registration, client configuration generation, configuration import, presets, and diagnostics. These commands are available from a source checkout on `main`; published npm `0.1.1` uses the original CLI.
 
 ```sh
 npm run build
@@ -106,6 +106,17 @@ node dist/index.js doctor
 ```
 
 `init` saves reusable settings. Quick add inspects remote metadata or records a local stdio command. `connect` generates Codex or version-specific OpenCode settings; explicit file writes merge and back up existing configuration. `doctor` separates hub access, metadata checks, and unverified execution. See [guided setup and diagnostics](docs/onboarding.md) for credential references, non-interactive setup, and merging options.
+
+Bring existing MCP settings into the shared registry or select bundled documentation targets:
+
+```sh
+node dist/index.js registry import-config /path/to/config.toml --select docs
+node dist/index.js registry import-config /path/to/config.toml --select docs --apply
+node dist/index.js preset list
+node dist/index.js preset import public-docs --select openai-docs --apply
+```
+
+Configuration imports and presets default to offline previews; `--apply` registers the selected connections atomically. Import preserves the source file, replaces known inline environment/Bearer values with variable references, and reports unsupported settings. Review literal command arguments before applying. See [configuration import and presets](docs/config-import.md) for formats, conflicts, and consumer-side credentials.
 
 ## MCP discovery
 

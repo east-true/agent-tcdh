@@ -2,7 +2,7 @@ import assert from "node:assert/strict";
 import { spawn } from "node:child_process";
 import { once } from "node:events";
 import { randomUUID } from "node:crypto";
-import { mkdir, mkdtemp, readFile, rm } from "node:fs/promises";
+import { mkdir, mkdtemp, readFile, rm, writeFile } from "node:fs/promises";
 import { tmpdir } from "node:os";
 import { dirname, join, resolve } from "node:path";
 import { fileURLToPath } from "node:url";
@@ -46,7 +46,7 @@ try {
   const [manifest] = manifests;
   assert.equal(manifest.name, "agent-tcdh");
   const files = new Set(manifest.files.map((entry) => entry.path));
-  for (const required of ["dist/index.js", "dist/onboarding/connect.js", "dist/onboarding/doctor.js", "docs/onboarding.md", "dist/app.js", "dist/a2a-http.js", "dist/targets/check.js", "docs/agent-compatibility.md", "docs/agent-verification.md", "examples/a2a.json", "README.md", "LICENSE", "CONTRIBUTING.md", "SECURITY.md", "CHANGELOG.md"]) {
+  for (const required of ["dist/index.js", "dist/onboarding/connect.js", "dist/onboarding/doctor.js", "docs/onboarding.md", "dist/onboarding/import-config.js", "dist/onboarding/presets.js", "docs/config-import.md", "dist/app.js", "dist/a2a-http.js", "dist/targets/check.js", "docs/agent-compatibility.md", "docs/agent-verification.md", "examples/a2a.json", "README.md", "LICENSE", "CONTRIBUTING.md", "SECURITY.md", "CHANGELOG.md"]) {
     assert.ok(files.has(required), "Required package file is missing: " + required);
   }
   for (const required of ["examples/local-demo.mjs", "examples/demo-targets.mjs", "docs/local-demo.md", "examples/public-docs-registry.json", "docs/public-mcp-verification.md", "docs/selection-verification.md", "docs/model-target-verification.md", "docs/platform-compatibility.md", "docs/reference.md"]) {
@@ -97,9 +97,25 @@ try {
   const local = await runCommand(executable, [...prefix, "target", "add", "--command", process.execPath,
     "--name", "Package stdio registration", "--dry-run"], { cwd: installation, env: environment });
   assert.equal(JSON.parse(local.stdout).connection.transport, "stdio");
+  const clientSource = join(directory, "source.jsonc");
+  const sourceContents = "\uFEFF" + JSON.stringify({ mcpServers: { "packaged-local": { command: process.execPath } } });
+  await writeFile(clientSource, sourceContents, "utf8");
+  const importPreview = await runCommand(executable, [...prefix, "registry", "import-config", clientSource], { cwd: installation, env: environment });
+  assert.equal(JSON.parse(importPreview.stdout).ready, true);
+  assert.equal(JSON.parse(importPreview.stdout).applied, false);
+  const presets = await runCommand(executable, [...prefix, "preset", "list"], { cwd: installation, env: environment });
+  assert.ok(JSON.parse(presets.stdout).presets.some((preset) => preset.id === "public-docs"));
+  const presetPreview = await runCommand(executable, [...prefix, "preset", "show", "public-docs", "--select", "openai-docs"], { cwd: installation, env: environment });
+  assert.equal(JSON.parse(presetPreview.stdout).targets.length, 1);
+  assert.equal(JSON.parse(presetPreview.stdout).executionVerified, false);
   const marker = "package-" + randomUUID();
   await startServer();
   const initial = await verifyRuntime(url, credentials, marker);
+  const imported = await runCommand(executable, [...prefix, "registry", "import-config", clientSource, "--apply"], { cwd: installation, env: environment });
+  assert.equal(JSON.parse(imported.stdout).applied, true);
+  assert.equal(await readFile(clientSource, "utf8"), sourceContents);
+  const presetImport = await runCommand(executable, [...prefix, "preset", "import", "public-docs", "--select", "openai-docs", "--prefix", "packaged", "--apply"], { cwd: installation, env: environment });
+  assert.equal(JSON.parse(presetImport.stdout).applied, true);
   const doctor = await runCommand(executable, [...prefix, "doctor"], { cwd: installation, env: environment });
   assert.equal(JSON.parse(doctor.stdout).status, "passed");
   assert.equal(JSON.parse(doctor.stdout).executionVerified, false);
@@ -122,6 +138,10 @@ try {
   await stopServer();
   await startServer();
   const restarted = await verifyRuntime(url, credentials, marker, true);
+  for (const id of ["packaged-local", "packaged-openai-docs"]) {
+    const persisted = await runCommand(executable, [...prefix, "target", "get", id], { cwd: installation, env: environment });
+    assert.equal(JSON.parse(persisted.stdout).id, id);
+  }
 
   // 6. Run stdio and A2A direct-call examples with production dependencies only.
   const demo = await runCommand(process.execPath, [join(installed, "examples/local-demo.mjs"), "--discovery", "a2a"], {
@@ -132,7 +152,7 @@ try {
   assert.ok(demoResult.executions.some((entry) => entry.transport === "stdio"));
   assert.equal(demoResult.remainingTargets.length, 2);
   console.log(JSON.stringify({ package: manifest.filename, isolatedProductionInstall: true,
-    installedBinary: true, onboarding: true, documentation: true, targetDiagnostics: true, localDemo: true, initial, restarted, persistence: true }, null, 2));
+    installedBinary: true, onboarding: true, configImport: true, presets: true, documentation: true, targetDiagnostics: true, localDemo: true, initial, restarted, persistence: true }, null, 2));
 } finally {
   // 7. Clean up only the processes and temporary files created by this run.
   try {
