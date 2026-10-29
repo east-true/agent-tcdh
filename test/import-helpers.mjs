@@ -7,7 +7,7 @@ import { ListToolsRequestSchema, CallToolRequestSchema } from "@modelcontextprot
 
 /** Create a remote MCP fixture with controlled tool pages and execution counters. */
 export async function mcpSource(t, options = {}) {
-  const app = Fastify({ logger: false });
+  const app = Fastify({ logger: false, ...(options.forceCloseConnections === true ? { forceCloseConnections: true } : {}) });
   const state = {
     pages: options.pages ?? [{ tools: [{ name: "search_docs", description: "공식 문서 검색", inputSchema: { type: "object" } }] }],
     calls: 0,

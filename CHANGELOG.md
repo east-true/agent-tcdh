@@ -2,6 +2,8 @@
 
 ## Unreleased
 
+- Add `doctor --all` with discovery filters, a pre-inspection selection cap, bounded concurrency, and versioned per-target prerequisite/metadata reports.
+
 - Add offline-first MCP configuration import from Codex, OpenCode v1/v2, and portable `mcpServers` JSON/JSONC, with selection, namespacing, and atomic opt-in application.
 - Add packaged public documentation presets with historical metadata dates and selective registration.
 

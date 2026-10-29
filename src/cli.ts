@@ -14,7 +14,9 @@ const help = `AgentTCDH — Agent & Tool Capability Discovery Hub
 Usage:
   agent-tcdh init [--yes] [--config FILE] [--hub URL] [--host HOST] [--port PORT] [--db FILE]
   agent-tcdh connect codex|opencode|opencode-v1 [--print | --write FILE] [--dry-run] [--replace]
-  agent-tcdh doctor [--target ID] [--hub URL]
+  agent-tcdh doctor [--target ID | --all] [--hub URL]
+                       [--q QUERY] [--protocol mcp|a2a] [--tag TAG] [--include-disabled]
+                       [--limit COUNT] [--concurrency COUNT]
   agent-tcdh target add <URL> [--protocol auto|mcp|a2a] [--id ID] [--dry-run]
   agent-tcdh target add --command COMMAND [--arg=ARG ...] [--env-var NAME ...] [--name NAME]
   agent-tcdh serve [--host HOST] [--port PORT] [--db FILE]
@@ -61,6 +63,8 @@ Options:
   --print               Print only the generated client configuration fragment
   --write FILE          Merge the hub into this explicit client file, preserving a backup
   --replace             Replace a conflicting named hub entry in a client configuration
+  --all                 Inspect all matching targets during doctor (default limit: 100)
+  --concurrency COUNT   Parallel doctor inspections, 1–8 (default: 3)
   --target ID           Inspect this target's metadata and local prerequisites during doctor
   --command COMMAND     Register a local MCP stdio command without executing it
   --arg ARG             Repeat for each literal stdio argument; use --arg=--flag for flags
@@ -104,6 +108,8 @@ export async function runCli(args: string[]): Promise<void> {
       write: { type: "string" },
       replace: { type: "boolean" },
       target: { type: "string" },
+      all: { type: "boolean" },
+      concurrency: { type: "string" },
       command: { type: "string" },
       arg: { type: "string", multiple: true },
       "env-var": { type: "string", multiple: true },
@@ -178,11 +184,21 @@ export async function runCli(args: string[]): Promise<void> {
     return;
   }
   if (command === "doctor") {
-    validateArguments(positionals, 1, values, ["hub", "target"]);
+    validateArguments(positionals, 1, values, ["hub", "target", "all", "q", "protocol", "tag", "include-disabled", "limit", "concurrency"]);
+    if (values.target && values.all || !values.all && ["q", "protocol", "tag", "include-disabled", "limit", "concurrency"].some((key) => values[key as keyof typeof values] !== undefined)) {
+      throw new Error("Choose --target or --all. Batch filters and limits require --all.");
+    }
+    const { batchDiagnosisOptionsSchema } = await import("./onboarding/doctor-batch.js");
+    const batch = values.all ? batchDiagnosisOptionsSchema.parse({ q: values.q, protocol: values.protocol, tag: values.tag,
+      includeDisabled: values["include-disabled"], limit: values.limit === undefined ? undefined : Number(values.limit),
+      concurrency: values.concurrency === undefined ? undefined : Number(values.concurrency) }) : undefined;
     const { diagnose } = await import("./onboarding/doctor.js");
-    const result = await diagnose({ hub, tokenEnv: values["token-env"] ?? consumerTokenEnv(config), target: values.target === undefined ? undefined : targetIdSchema.parse(values.target) });
+    const result = await diagnose({ hub, tokenEnv: values["token-env"] ?? consumerTokenEnv(config), target: values.target === undefined ? undefined : targetIdSchema.parse(values.target), batch });
     printOnboarding(result, values.json, () => result.checks.map((check) => check.status.toUpperCase() + " " + check.id + ": " + check.message
       + (check.status !== "passed" && check.action ? "\n  Next: " + check.action : "")).join("\n")
+      + (result.batch ? "\n" + result.batch.targets.map((target) => target.status.toUpperCase() + " " + target.id + " (" + target.transport + ")\n"
+        + target.checks.map((check) => "  " + check.status.toUpperCase() + " " + check.id + ": " + check.message
+          + (check.status !== "passed" && check.action ? "\n    Next: " + check.action : "")).join("\n")).join("\n") : "")
       + "\nExecution verification: not performed.");
     process.exitCode = result.status === "failed" ? 1 : 0;
     return;

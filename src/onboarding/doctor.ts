@@ -5,9 +5,11 @@ import { HubClient } from "../client.js";
 import { readClientToken } from "../auth.js";
 import { searchSchema, targetIdSchema } from "../targets/schema.js";
 import { checkTarget, type TargetCheckReport } from "../targets/check.js";
+import type { Target } from "../targets/schema.js";
+import type { BatchDiagnosisOptions, BatchDiagnosisReport } from "./doctor-batch.js";
 import { normalizeHub } from "./config.js";
 
-interface Check {
+export interface Check {
   id: string;
   status: "passed" | "warning" | "failed" | "skipped";
   message: string;
@@ -59,10 +61,45 @@ async function health(hub: string): Promise<void> {
   }
 }
 
-/** Diagnose local prerequisites and hub discovery, inspecting one target only when explicitly requested. */
+/** Diagnose one consumer-side target without executing commands, tools, or agent tasks. */
+export async function diagnoseTarget(definition: Target, environment = process.env) {
+  const checks: Check[] = [];
+  const required = [...new Set([...(definition.connection.transport !== "stdio" ? definition.connection.auth?.envVars ?? [] : []),
+    ...(definition.connection.transport === "stdio" ? definition.connection.envVars : [])])];
+  for (const variable of required) {
+    checks.push({ id: "target-env:" + variable, status: environment[variable] ? "passed" : "failed",
+      message: environment[variable] ? "Target credential reference is available: " + variable : "Target environment variable is missing: " + variable,
+      action: "Set this variable in the consuming agent's environment." });
+  }
+  if (definition.connection.transport === "stdio") {
+    const available = await executableAvailable(definition.connection.command, environment);
+    checks.push({ id: "target-command", status: available ? "passed" : "failed",
+      message: available ? "The stdio executable is present; it was not launched." : "The stdio executable was not found or is not executable.",
+      action: "Install the command or correct its path in the consuming environment." });
+  }
+  const target = await checkTarget(definition, {}, environment);
+  checks.push({ id: "target-metadata", status: target.status, message: target.scope === "none"
+    ? "Stdio metadata and execution are not checked." : "Remote metadata inspection: " + target.status,
+    ...(target.status === "passed" ? {} : { action: target.scope === "none"
+      ? "Use the consuming agent MCP client to verify this stdio server."
+      : "Review target check output; use target refresh --dry-run to preview metadata changes." }) });
+  return { id: definition.id, protocol: definition.protocol, transport: definition.connection.transport,
+    status: diagnosticStatus(checks), checks, metadata: target, executionVerified: false as const };
+}
+
+/** Aggregate diagnostic severity while allowing intentionally skipped execution checks. */
+export function diagnosticStatus(checks: Pick<Check, "status">[]): "passed" | "warning" | "failed" {
+  return checks.some((check) => check.status === "failed") ? "failed"
+    : checks.some((check) => check.status === "warning") ? "warning" : "passed";
+}
+
+/** Diagnose hub access and explicitly selected targets in the consuming environment. */
 export async function diagnose(options: {
-  hub: string; tokenEnv?: string | undefined; target?: string | undefined;
+  hub: string; tokenEnv?: string | undefined; target?: string | undefined; batch?: BatchDiagnosisOptions | undefined;
 }, environment = process.env) {
+  if (options.target && options.batch) {
+    throw new Error("Choose --target or --all, not both.");
+  }
   // 1. Check the local runtime and selected credential reference without exposing its value.
   const hub = normalizeHub(options.hub);
   const checks: Check[] = [{ id: "node", status: Number(process.versions.node.split(".")[0]) >= 24 ? "passed" : "failed",
@@ -108,25 +145,9 @@ export async function diagnose(options: {
   if (options.target && readable) {
     try {
       const definition = await client.get(targetIdSchema.parse(options.target));
-      const required = [...new Set([...(definition.connection.transport !== "stdio" ? definition.connection.auth?.envVars ?? [] : []),
-        ...(definition.connection.transport === "stdio" ? definition.connection.envVars : [])])];
-      for (const variable of required) {
-        checks.push({ id: "target-env:" + variable, status: environment[variable] ? "passed" : "failed",
-          message: environment[variable] ? "Target credential reference is available: " + variable : "Target environment variable is missing: " + variable,
-          action: "Set this variable in the consuming agent's environment." });
-      }
-      if (definition.connection.transport === "stdio") {
-        const available = await executableAvailable(definition.connection.command, environment);
-        checks.push({ id: "target-command", status: available ? "passed" : "failed",
-          message: available ? "The stdio executable is present; it was not launched." : "The stdio executable was not found or is not executable.",
-          action: "Install the command or correct its path in the consuming environment." });
-      }
-      target = await checkTarget(definition, {}, environment);
-      checks.push({ id: "target-metadata", status: target.status, message: target.scope === "none"
-        ? "Stdio metadata and execution are not checked." : "Remote metadata inspection: " + target.status,
-        ...(target.status === "passed" ? {} : { action: target.scope === "none"
-          ? "Use the consuming agent MCP client to verify this stdio server."
-          : "Review target check output; use target refresh --dry-run to preview metadata changes." }) });
+      const inspected = await diagnoseTarget(definition, environment);
+      checks.push(...inspected.checks);
+      target = inspected.metadata;
     } catch {
       checks.push({ id: "target", status: "failed", message: "The selected target could not be inspected.",
         action: "Check the target id with target list and confirm discovery permissions." });
@@ -134,7 +155,19 @@ export async function diagnose(options: {
   } else if (options.target) {
     checks.push({ id: "target", status: "skipped", message: "Target inspection requires working hub discovery." });
   }
-  const status = checks.some((check) => check.status === "failed") ? "failed"
-    : checks.some((check) => check.status === "warning") ? "warning" : "passed";
-  return { status, hub, checks, executionVerified: false, ...(target ? { target } : {}) };
+  // 4. Inspect a bounded batch only after authenticated discovery succeeds.
+  let batch: BatchDiagnosisReport | undefined;
+  if (options.batch && readable) {
+    const { diagnoseBatch } = await import("./doctor-batch.js");
+    batch = await diagnoseBatch(client, options.batch, environment);
+    checks.push({ id: "targets", status: batch.status,
+      message: batch.selectionIssue?.message ?? (batch.matched === 0 ? "No targets match the selected filters."
+        : "Inspected " + batch.targets.length + " targets: " + batch.summary.passed + " passed, "
+          + batch.summary.warning + " warning, " + batch.summary.failed + " failed."),
+      action: batch.selectionIssue ? "Narrow --q/--tag/--protocol, increase --limit (maximum 1000), or retry after registry changes stop."
+        : "Review each target's checks; configure prerequisites in the consuming environment." });
+  } else if (options.batch) {
+    checks.push({ id: "targets", status: "skipped", message: "Batch inspection requires working hub discovery." });
+  }
+  return { status: diagnosticStatus(checks), hub, checks, executionVerified: false, ...(target ? { target } : {}), ...(batch ? { batch } : {}) };
 }
