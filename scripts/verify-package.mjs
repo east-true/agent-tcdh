@@ -2,7 +2,7 @@ import assert from "node:assert/strict";
 import { spawn } from "node:child_process";
 import { once } from "node:events";
 import { randomUUID } from "node:crypto";
-import { mkdir, mkdtemp, readFile, rm, writeFile } from "node:fs/promises";
+import { mkdir, mkdtemp, readFile, realpath, rm, writeFile } from "node:fs/promises";
 import { tmpdir } from "node:os";
 import { dirname, join, resolve } from "node:path";
 import { fileURLToPath } from "node:url";
@@ -99,7 +99,7 @@ try {
   const cursor = await runCommand(executable, [...prefix, "connect", "cursor", "--print"], { cwd: installation, env: environment });
   const cursorSettings = JSON.parse(cursor.stdout).mcpServers.agent_tcdh;
   assert.equal(cursorSettings.command, process.execPath);
-  assert.equal(cursorSettings.args[0], join(installed, "dist", "index.js"));
+  assert.equal(await realpath(cursorSettings.args[0]), await realpath(join(installed, "dist", "index.js")));
   assert.equal(cursorSettings.env.AGENT_TCDH_READ_TOKEN, "${env:AGENT_TCDH_READ_TOKEN}");
   assert.ok(!cursor.stdout.includes(credentials.readToken));
   const local = await runCommand(executable, [...prefix, "target", "add", "--command", process.execPath,
