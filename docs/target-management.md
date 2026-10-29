@@ -1,6 +1,6 @@
 # Manage existing registrations
 
-These commands are available from source on `main` for the next release. Published npm `0.1.1` does not include the new edit/state commands or removal previews. Build the checkout and replace `agent-tcdh` below with `node dist/index.js` when working from source.
+Requires AgentTCDH `0.1.2` or later. Build a source checkout and replace `agent-tcdh` below with `node dist/index.js` when working from source. See the [v0.1.2 release notes](releases/v0.1.2.md) for installation and publication checks.
 
 ## Edit labels and tags without a JSON file
 

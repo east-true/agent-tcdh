@@ -6,6 +6,7 @@ import {
   TaskNotFoundError, UnsupportedOperationError,
 } from "@a2a-js/sdk/errors";
 import { z } from "zod";
+import { PACKAGE_VERSION } from "./version.js";
 import { HubError } from "./errors.js";
 import type { DiscoveryReader } from "./mcp.js";
 import { searchSchema, targetIdSchema } from "./targets/schema.js";
@@ -20,7 +21,7 @@ export type DiscoveryCommand = z.infer<typeof discoveryCommandSchema>;
 export function createHubAgentCard(baseUrl: string, authEnabled: boolean): AgentCard {
   // 1. Publish the query format and supported protocol versions.
   const card = AgentCard.fromJSON({
-    name: "AgentTCDH", version: "0.1.1",
+    name: "AgentTCDH", version: PACKAGE_VERSION,
     description: "Find capabilities and connection details for registered MCP servers and A2A agents. "
       + "A text part is used as a literal keyword query; a data part uses {operation, arguments}. "
       + "Connect directly using the returned connection. Conversation history and long-running tasks are not stored.",

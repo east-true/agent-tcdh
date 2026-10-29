@@ -4,11 +4,22 @@ CLI, connection definitions, protocol details, authentication, and deployment se
 
 ## CLI
 
-The upcoming `init`, quick-add, `connect`, and `doctor` commands on `main` are documented in [guided setup](onboarding.md), including [batch diagnostics](onboarding.md#inspect-multiple-registrations). They are not included in npm `0.1.1`. Configuration import and packaged preset commands on `main` are documented in [configuration import and presets](config-import.md). Additional client profiles are covered in [more MCP client connections](client-connections.md). File-free edit/state commands and deletion previews are covered in [target management](target-management.md). Read-only snapshot/config/preset comparisons are covered in [registry comparison](registry-comparison.md). Existing CLI commands also accept `--config FILE` setup defaults and `--json` on `main`.
+This reference targets AgentTCDH `0.1.2`. See [guided setup](onboarding.md), including [batch diagnostics](onboarding.md#inspect-multiple-registrations), [configuration import and presets](config-import.md), [client connections](client-connections.md), [target management](target-management.md), and [registry comparison](registry-comparison.md). Version `0.1.1` supports the original CLI and does not include these additions. Check the [release notes](releases/v0.1.2.md) for installation and publication status.
 
 ```text
+agent-tcdh init [--yes] [--config FILE] [--hub URL] [--host HOST] [--port PORT] [--db FILE]
+agent-tcdh connect <CLIENT> [--print | --write FILE] [--dry-run] [--replace]
+                     CLIENT: codex, opencode, opencode-v1, claude-code, gemini-cli, cursor, vscode
+agent-tcdh doctor [--target ID | --all] [--hub URL]
+                     [--q QUERY] [--protocol mcp|a2a] [--tag TAG] [--include-disabled]
+                     [--limit COUNT] [--concurrency COUNT]
+agent-tcdh target add <URL> [--protocol auto|mcp|a2a] [--id ID] [--dry-run]
+agent-tcdh target add --command COMMAND [--arg=ARG ...] [--env-var NAME ...] [--name NAME]
 agent-tcdh serve [--host HOST] [--port PORT] [--db FILE]
 agent-tcdh target add <JSON_FILE> [--hub URL]
+agent-tcdh target edit <ID> [--name NAME] [--description TEXT] [--add-tag TAG ...] [--remove-tag TAG ...]
+                     [--dry-run] [--if-match ETAG] [--hub URL]
+agent-tcdh target enable|disable <ID> [--dry-run] [--if-match ETAG] [--hub URL]
 agent-tcdh target update <ID> <JSON_FILE> [--if-match ETAG] [--hub URL]
 agent-tcdh target import <URL> --id ID --protocol mcp|a2a [--dry-run] [--hub URL]
 agent-tcdh target refresh <ID> [--dry-run] [--hub URL]
@@ -16,15 +27,20 @@ agent-tcdh target check <ID> [--bearer-env VARIABLE] [--hub URL]
 agent-tcdh target get <ID> [--with-version] [--hub URL]
 agent-tcdh target list [--q QUERY] [--protocol mcp|a2a] [--tag TAG]
                      [--limit COUNT] [--offset OFFSET] [--include-disabled] [--hub URL]
-agent-tcdh target remove <ID> [--if-match ETAG] [--hub URL]
+agent-tcdh target remove <ID> [--dry-run] [--if-match ETAG] [--hub URL]
+agent-tcdh registry import-config <FILE> [--format FORMAT] [--select NAME ...] [--prefix PREFIX] [--apply | --compare] [--details]
+agent-tcdh preset list
+agent-tcdh preset show <NAME> [--select ID ...] [--compare] [--details]
+agent-tcdh preset import <NAME> [--select ID ...] [--prefix PREFIX] [--apply | --compare] [--details]
+agent-tcdh registry diff <JSON_FILE> [--on-conflict error|skip|replace] [--details] [--hub URL]
 agent-tcdh registry export <JSON_FILE> [--overwrite] [--hub URL]
 agent-tcdh registry import <JSON_FILE> [--on-conflict error|skip|replace] [--dry-run] [--hub URL]
-agent-tcdh mcp [--hub URL]
+agent-tcdh mcp [--hub URL] [--no-config] [--anonymous | --token-env VARIABLE]
 ```
 
-The default command is `serve`. Successful administrative commands print JSON; failures print diagnostics to stderr and exit with code 1. `target check` also prints failed/skipped reports as JSON and uses the exit codes below. Use `--help` for all options.
+The default command is `serve`. Existing administrative commands print JSON; setup, edit/state, and comparison commands show readable terminal summaries with JSON when redirected or requested using `--json`; failures print diagnostics to stderr and exit with code 1. `target check` also prints failed/skipped reports as JSON and uses the exit codes below. Use `--help` for all options.
 
-HTTP client commands and `mcp` accept `--token-env VARIABLE`, defaulting to `AGENT_TCDH_TOKEN`. An explicitly selected empty variable fails without falling back to another credential. `serve` uses server environment variables instead. On `main`, the stdio `mcp` bridge also accepts `--no-config` to ignore setup files and `--anonymous` to avoid resolving inherited credentials; see the [client guide](client-connections.md#pass-a-selected-credential).
+HTTP client commands and `mcp` accept `--token-env VARIABLE`, defaulting to `AGENT_TCDH_TOKEN`. An explicitly selected empty variable fails without falling back to another credential. `serve` uses server environment variables instead. In `0.1.2`, the stdio `mcp` bridge also accepts `--no-config` to ignore setup files and `--anonymous` to avoid resolving inherited credentials; see the [client guide](client-connections.md#pass-a-selected-credential).
 
 Updates replace the complete definition. Set `enabled: false` to disable a target. Default searches exclude disabled targets; direct lookup and `--include-disabled` still expose their metadata.
 

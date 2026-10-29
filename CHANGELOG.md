@@ -2,26 +2,21 @@
 
 ## Unreleased
 
-- Add read-only `registry diff` and opt-in config/preset `--compare` previews, with field-level classifications and import-policy conflict/effect summaries.
-- Reject malformed UTF-8 snapshot files and omit source values from JSON syntax diagnostics.
+No changes yet.
 
-- Add file-free `target edit`, `enable`, and `disable` with before/after previews, idempotent no-ops, and automatic conditional writes.
-- Add read-only `target remove --dry-run` reports with the reviewed registration version for guarded deletion.
+## 0.1.2 — 2026-10-30
 
-- Add Claude Code, Gemini CLI, Cursor, and VS Code connection profiles backed by the local discovery bridge, with client-specific credential references and isolated bridge configuration.
-- Preserve UTF-8 BOMs when merging JSONC client settings and exclude exact generated self-bridges during portable client configuration import.
+- Add interactive/non-interactive setup with reusable local/remote defaults and credential environment references.
+- Add URL-based MCP/A2A and stdio quick registration without definition files or target execution.
+- Add seven client connection profiles, explicit configuration merging, backups, and isolated discovery-bridge credentials.
+- Add offline-first configuration imports, selective packaged presets, and explicit atomic application.
+- Add single-target and bounded batch diagnostics with metadata/execution distinctions and inspected versions.
+- Add file-free label/tag editing, enable/disable commands, guarded writes, no-ops, and deletion previews.
+- Add read-only registry/config/preset comparisons with field-level differences and import conflict/effect summaries.
+- Preserve JSON automation output, add readable terminal summaries, and reject malformed UTF-8 snapshots without printing source values.
+- Share package version metadata across MCP, A2A, import clients, and OpenAPI, with a release consistency regression check.
 
-- Add `doctor --all` with discovery filters, a pre-inspection selection cap, bounded concurrency, and versioned per-target prerequisite/metadata reports.
-
-- Add offline-first MCP configuration import from Codex, OpenCode v1/v2, and portable `mcpServers` JSON/JSONC, with selection, namespacing, and atomic opt-in application.
-- Add packaged public documentation presets with historical metadata dates and selective registration.
-
-- Add interactive/non-interactive `init` with reusable settings and credential environment references.
-- Add URL-based MCP/A2A quick registration and stdio command registration without launching targets.
-- Add Codex and explicit OpenCode v1/v2 connection templates, opt-in file merging, and backups.
-- Add `doctor` diagnostics that separate hub health, discovery authentication, metadata inspection, and unverified execution.
-- Keep JSON automation output and add readable terminal target lists and onboarding summaries.
-
+Node.js 24+, SQLite schema version 2, snapshot format version 1, and the discovery/direct-execution architecture remain unchanged. See the [release notes](docs/releases/v0.1.2.md) for compatibility, verification scope, and publication checks.
 
 ## 0.1.1 — 2026-10-28
 

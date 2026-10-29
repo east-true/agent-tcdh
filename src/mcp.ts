@@ -1,5 +1,6 @@
 import { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
 import { StdioServerTransport } from "@modelcontextprotocol/sdk/server/stdio.js";
+import { PACKAGE_VERSION } from "./version.js";
 import { HubClient } from "./client.js";
 import { searchFields, searchSchema, targetIdSchema } from "./targets/schema.js";
 import type { SearchOptions, SearchResult, Target } from "./targets/schema.js";
@@ -13,7 +14,7 @@ export interface DiscoveryReader {
 export function createDiscoveryServer(client: DiscoveryReader): McpServer {
   // 1. Explain discovery and direct connections to the consuming agent.
   const server = new McpServer(
-    { name: "agent-tcdh", version: "0.1.1" },
+    { name: "agent-tcdh", version: PACKAGE_VERSION },
     {
       instructions: "Use search_targets to find capabilities and get_target to inspect connection details. "
         + "Connect directly using the returned connection protocol, URL, or executable command. "

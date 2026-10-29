@@ -48,12 +48,13 @@ try {
   const [manifest] = manifests;
   assert.equal(manifest.name, "agent-tcdh");
   const files = new Set(manifest.files.map((entry) => entry.path));
-  for (const required of ["dist/index.js", "dist/onboarding/connect.js", "dist/onboarding/doctor.js", "dist/onboarding/doctor-batch.js", "docs/onboarding.md", "docs/client-connections.md", "dist/onboarding/import-config.js", "dist/onboarding/presets.js", "docs/config-import.md", "dist/app.js", "dist/a2a-http.js", "dist/targets/check.js", "dist/targets/edit.js", "dist/registry/diff.js", "docs/registry-comparison.md", "docs/target-management.md", "docs/agent-compatibility.md", "docs/agent-verification.md", "examples/a2a.json", "README.md", "LICENSE", "CONTRIBUTING.md", "SECURITY.md", "CHANGELOG.md"]) {
+  for (const required of ["dist/index.js", "dist/version.js", "dist/onboarding/connect.js", "dist/onboarding/doctor.js", "dist/onboarding/doctor-batch.js", "docs/onboarding.md", "docs/client-connections.md", "dist/onboarding/import-config.js", "dist/onboarding/presets.js", "docs/config-import.md", "dist/app.js", "dist/a2a-http.js", "dist/targets/check.js", "dist/targets/edit.js", "dist/registry/diff.js", "docs/registry-comparison.md", "docs/target-management.md", "docs/agent-compatibility.md", "docs/agent-verification.md", "examples/a2a.json", "README.md", "LICENSE", "CONTRIBUTING.md", "SECURITY.md", "CHANGELOG.md"]) {
     assert.ok(files.has(required), "Required package file is missing: " + required);
   }
   for (const required of ["examples/local-demo.mjs", "examples/demo-targets.mjs", "docs/local-demo.md", "examples/public-docs-registry.json", "docs/public-mcp-verification.md", "docs/selection-verification.md", "docs/model-target-verification.md", "docs/platform-compatibility.md", "docs/reference.md"]) {
     assert.ok(files.has(required), "Local demo artifact is missing: " + required);
   }
+  assert.ok(files.has("docs/releases/v" + manifest.version + ".md"), "Matching versioned release notes must be packaged.");
   assert.equal([...files].some((file) => /^(src|test|node_modules|\.github)\//u.test(file) || /(^|\/)\.env(?:\.|$)|\.sqlite(?:$|-)/u.test(file)), false);
 
   // 2. Install production dependencies in isolation from the repository's development dependencies.

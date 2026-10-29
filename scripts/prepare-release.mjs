@@ -16,6 +16,7 @@ assert.equal(status.stdout.trim(), "", "Prepare releases from a clean committed 
 const directory = resolve(values.out);
 
 // 1. Build and pack into a new directory without replacing existing release assets.
+await mkdir(dirname(directory), { recursive: true });
 await mkdir(directory);
 await runCommand("npm", ["run", "build"], { cwd: project });
 const packed = await runCommand("npm", ["pack", "--ignore-scripts", "--json", "--pack-destination", directory], { cwd: project });

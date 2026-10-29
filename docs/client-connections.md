@@ -1,6 +1,6 @@
 # More MCP client connections
 
-These profiles are available from source on `main` for the next release. Published npm `0.1.1` does not include them. Build the checkout with `npm ci` and `npm run build`; replace `agent-tcdh` below with `node dist/index.js` when working from source.
+Requires AgentTCDH `0.1.2` or later. Build a source checkout with `npm ci` and `npm run build`; replace `agent-tcdh` below with `node dist/index.js` when working from source. See the [v0.1.2 release notes](releases/v0.1.2.md) for installation and publication checks.
 
 ## Generate a connection
 
