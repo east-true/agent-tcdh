@@ -1,3 +1,4 @@
+import { fileURLToPath } from "node:url";
 import { createHash } from "node:crypto";
 import { parse as parseToml } from "smol-toml";
 import { parse as parseJsonc, type ParseError } from "jsonc-parser";
@@ -197,6 +198,20 @@ function convertEntry(name: string, input: unknown, format: ConfigPreparation["f
     ...(bearerEnv ? { auth: { type: "bearer", envVars: [bearerEnv] } } : {}) } });
 }
 
+/** Recognize only this installation's exact generated discovery bridge to the destination hub. */
+function isDestinationBridge(input: unknown, hub: string): boolean {
+  if (!input || typeof input !== "object" || Array.isArray(input)) {
+    return false;
+  }
+  const entry = input as Record<string, unknown>;
+  const args = entry.args;
+  return entry.command === process.execPath && Array.isArray(args)
+    && args[0] === fileURLToPath(new URL("../../dist/index.js", import.meta.url))
+    && args[1] === "mcp" && args[2] === "--hub" && args[3] === normalizeHub(hub) && args[4] === "--no-config"
+    && (args.length === 6 && args[5] === "--anonymous"
+      || args.length === 7 && args[5] === "--token-env" && envNameSchema.safeParse(args[6]).success);
+}
+
 /** Parse one client configuration, select entries, and produce a reviewable offline import plan. */
 export function prepareConfigImport(text: string, options: {
   format?: SourceFormat | undefined; select?: string[] | undefined; prefix?: string | undefined; hub?: string | undefined;
@@ -266,6 +281,10 @@ export function prepareConfigImport(text: string, options: {
   for (const [name, value] of chosen) {
     const before = issues.length;
     try {
+      if (options.hub && isDestinationBridge(value, options.hub)) {
+        issues.push({ name, severity: "warning", code: "HUB_SELF_REFERENCE", message: "The destination hub's generated local discovery bridge was excluded." });
+        continue;
+      }
       const target = convertEntry(name, value, format, options.prefix, issues);
       if (target.connection.transport !== "stdio" && options.hub
         && target.connection.url.replace(/\/$/u, "") === normalizeHub(options.hub) + "/mcp") {

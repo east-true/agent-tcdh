@@ -6,6 +6,8 @@ import { mkdir, mkdtemp, readFile, rm, writeFile } from "node:fs/promises";
 import { tmpdir } from "node:os";
 import { dirname, join, resolve } from "node:path";
 import { fileURLToPath } from "node:url";
+import { Client } from "@modelcontextprotocol/sdk/client/index.js";
+import { StdioClientTransport } from "@modelcontextprotocol/sdk/client/stdio.js";
 import { parseArgs } from "node:util";
 import { availablePort, runCommand, verifyRuntime, waitForHub } from "./smoke-runtime.mjs";
 
@@ -46,7 +48,7 @@ try {
   const [manifest] = manifests;
   assert.equal(manifest.name, "agent-tcdh");
   const files = new Set(manifest.files.map((entry) => entry.path));
-  for (const required of ["dist/index.js", "dist/onboarding/connect.js", "dist/onboarding/doctor.js", "dist/onboarding/doctor-batch.js", "docs/onboarding.md", "dist/onboarding/import-config.js", "dist/onboarding/presets.js", "docs/config-import.md", "dist/app.js", "dist/a2a-http.js", "dist/targets/check.js", "docs/agent-compatibility.md", "docs/agent-verification.md", "examples/a2a.json", "README.md", "LICENSE", "CONTRIBUTING.md", "SECURITY.md", "CHANGELOG.md"]) {
+  for (const required of ["dist/index.js", "dist/onboarding/connect.js", "dist/onboarding/doctor.js", "dist/onboarding/doctor-batch.js", "docs/onboarding.md", "docs/client-connections.md", "dist/onboarding/import-config.js", "dist/onboarding/presets.js", "docs/config-import.md", "dist/app.js", "dist/a2a-http.js", "dist/targets/check.js", "docs/agent-compatibility.md", "docs/agent-verification.md", "examples/a2a.json", "README.md", "LICENSE", "CONTRIBUTING.md", "SECURITY.md", "CHANGELOG.md"]) {
     assert.ok(files.has(required), "Required package file is missing: " + required);
   }
   for (const required of ["examples/local-demo.mjs", "examples/demo-targets.mjs", "docs/local-demo.md", "examples/public-docs-registry.json", "docs/public-mcp-verification.md", "docs/selection-verification.md", "docs/model-target-verification.md", "docs/platform-compatibility.md", "docs/reference.md"]) {
@@ -94,6 +96,12 @@ try {
   const codex = await runCommand(executable, [...prefix, "connect", "codex", "--print"], { cwd: installation, env: environment });
   assert.ok(codex.stdout.includes("bearer_token_env_var"));
   assert.ok(!codex.stdout.includes(credentials.readToken));
+  const cursor = await runCommand(executable, [...prefix, "connect", "cursor", "--print"], { cwd: installation, env: environment });
+  const cursorSettings = JSON.parse(cursor.stdout).mcpServers.agent_tcdh;
+  assert.equal(cursorSettings.command, process.execPath);
+  assert.equal(cursorSettings.args[0], join(installed, "dist", "index.js"));
+  assert.equal(cursorSettings.env.AGENT_TCDH_READ_TOKEN, "${env:AGENT_TCDH_READ_TOKEN}");
+  assert.ok(!cursor.stdout.includes(credentials.readToken));
   const local = await runCommand(executable, [...prefix, "target", "add", "--command", process.execPath,
     "--name", "Package stdio registration", "--dry-run"], { cwd: installation, env: environment });
   assert.equal(JSON.parse(local.stdout).connection.transport, "stdio");
@@ -128,6 +136,20 @@ try {
   assert.ok(batchReport.batch.targets[0].targetVersion);
   assert.equal(batchReport.batch.targets[0].executionVerified, false);
 
+  const bridge = new StdioClientTransport({ command: cursorSettings.command, args: cursorSettings.args, cwd: directory,
+    env: { AGENT_TCDH_READ_TOKEN: credentials.readToken, AGENT_TCDH_CONFIG: join(directory, "missing-config.json") }, stderr: "pipe" });
+  const bridgeClient = new Client({ name: "package-client-profile", version: "1.0.0" });
+  try {
+    await bridgeClient.connect(bridge);
+    assert.equal((await bridgeClient.listTools()).tools.length, 2);
+    const discovered = await bridgeClient.callTool({ name: "get_target", arguments: { id: marker + "-mcp" } });
+    assert.equal(discovered.isError, undefined);
+    assert.equal(JSON.parse(discovered.content[0].text).id, marker + "-mcp");
+  } finally {
+    await bridgeClient.close();
+    await bridge.close();
+  }
+
   // 4. Verify JSON failure diagnostics for an unreachable metadata endpoint using the installed CLI.
   let diagnostic;
   try {
@@ -160,7 +182,7 @@ try {
   assert.ok(demoResult.executions.some((entry) => entry.transport === "stdio"));
   assert.equal(demoResult.remainingTargets.length, 2);
   console.log(JSON.stringify({ package: manifest.filename, isolatedProductionInstall: true,
-    installedBinary: true, onboarding: true, batchDiagnostics: true, configImport: true, presets: true, documentation: true, targetDiagnostics: true, localDemo: true, initial, restarted, persistence: true }, null, 2));
+    installedBinary: true, onboarding: true, clientProfiles: true, batchDiagnostics: true, configImport: true, presets: true, documentation: true, targetDiagnostics: true, localDemo: true, initial, restarted, persistence: true }, null, 2));
 } finally {
   // 7. Clean up only the processes and temporary files created by this run.
   try {

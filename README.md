@@ -89,7 +89,7 @@ These are working examples, not a provider allowlist. Register other MCP servers
 
 ## Guided setup on main
 
-The next release adds guided setup, file-free registration, client configuration generation, configuration import, presets, and diagnostics. These commands are available from a source checkout on `main`; published npm `0.1.1` uses the original CLI.
+The next release adds guided setup, file-free registration, client configuration generation for seven profiles, configuration import, presets, and diagnostics. These commands are available from a source checkout on `main`; published npm `0.1.1` uses the original CLI.
 
 ```sh
 npm run build
@@ -102,10 +102,12 @@ In another terminal in the checkout, replace the example URL with your target:
 ```sh
 node dist/index.js target add https://mcp.example.com/mcp
 node dist/index.js connect codex --print
+node dist/index.js connect claude-code --print
+node dist/index.js connect gemini-cli --print
 node dist/index.js doctor
 ```
 
-`init` saves reusable settings. Quick add inspects remote metadata or records a local stdio command. `connect` generates Codex or version-specific OpenCode settings; explicit file writes merge and back up existing configuration. `doctor` separates hub access, metadata checks, and unverified execution. See [guided setup and diagnostics](docs/onboarding.md) for credential references, non-interactive setup, and merging options.
+`init` saves reusable settings. Quick add inspects remote metadata or records a local stdio command. `connect` generates Codex, version-specific OpenCode, Claude Code, Gemini CLI, Cursor, or VS Code settings; explicit file writes merge and back up existing configuration. `doctor` separates hub access, metadata checks, and unverified execution. See [guided setup and diagnostics](docs/onboarding.md) for credential references, non-interactive setup, and merging options. The [additional client guide](docs/client-connections.md) explains stdio bridge profiles and their verification scope.
 
 Bring existing MCP settings into the shared registry or select bundled documentation targets:
 

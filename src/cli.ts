@@ -13,7 +13,8 @@ const help = `AgentTCDH — Agent & Tool Capability Discovery Hub
 
 Usage:
   agent-tcdh init [--yes] [--config FILE] [--hub URL] [--host HOST] [--port PORT] [--db FILE]
-  agent-tcdh connect codex|opencode|opencode-v1 [--print | --write FILE] [--dry-run] [--replace]
+  agent-tcdh connect <CLIENT> [--print | --write FILE] [--dry-run] [--replace]
+                       CLIENT: codex, opencode, opencode-v1, claude-code, gemini-cli, cursor, vscode
   agent-tcdh doctor [--target ID | --all] [--hub URL]
                        [--q QUERY] [--protocol mcp|a2a] [--tag TAG] [--include-disabled]
                        [--limit COUNT] [--concurrency COUNT]
@@ -35,7 +36,7 @@ Usage:
   agent-tcdh preset import <NAME> [--select ID ...] [--prefix PREFIX] [--apply]
   agent-tcdh registry export <JSON_FILE> [--overwrite] [--hub URL]
   agent-tcdh registry import <JSON_FILE> [--on-conflict error|skip|replace] [--dry-run] [--hub URL]
-  agent-tcdh mcp [--hub URL]
+  agent-tcdh mcp [--hub URL] [--no-config] [--anonymous | --token-env VARIABLE]
 
 Environment:
   HOST                  Listener address (default: 127.0.0.1)
@@ -54,6 +55,8 @@ Options:
   --format FORMAT       Client config format: auto, codex, opencode, opencode-v1, mcp-json
   --select NAME         Repeat to select source server names or preset target ids
   --prefix PREFIX       Namespace imported target ids
+  --no-config           Ignore setup files for an explicitly configured stdio discovery bridge
+  --anonymous           Use anonymous hub access for mcp; never resolve credential variables
   --config FILE         Use setup defaults; flags override environment, then configuration
   --json                Print JSON, including in a terminal; redirected output defaults to JSON
   --remote              Initialize client settings for an existing hub
@@ -95,6 +98,8 @@ export async function runCli(args: string[]): Promise<void> {
     options: {
       help: { type: "boolean", short: "h" },
       config: { type: "string" },
+      "no-config": { type: "boolean" },
+      anonymous: { type: "boolean" },
       apply: { type: "boolean" },
       format: { type: "string" },
       select: { type: "string", multiple: true },
@@ -145,6 +150,10 @@ export async function runCli(args: string[]): Promise<void> {
 
   // 2. Prepare first-run configuration without loading a file that does not exist yet.
   const command = positionals[0] ?? "serve";
+  if ((values["no-config"] || values.anonymous) && command !== "mcp"
+    || values["no-config"] && values.config || values.anonymous && values["token-env"]) {
+    throw new Error("--no-config and --anonymous are mcp-only options. Do not combine --no-config with --config, or --anonymous with --token-env.");
+  }
   if (command === "init") {
     validateArguments(positionals, 1, values, ["config", "json", "yes", "remote", "force", "hub", "host", "port", "db", "token-env", "read-token-env"]);
     const { initialize } = await import("./onboarding/init.js");
@@ -159,7 +168,7 @@ export async function runCli(args: string[]): Promise<void> {
       + result.nextCommands.map((args) => formatCommand(args)).join("\n"));
     return;
   }
-  const config = await loadConfig(values.config);
+  const config = values["no-config"] ? undefined : await loadConfig(values.config);
   const hub = values.hub ?? process.env.AGENT_TCDH_URL ?? config?.hub ?? "http://127.0.0.1:3000";
 
   // 3. Generate consumer settings and run read-only diagnostics before requiring administration credentials.
@@ -237,10 +246,10 @@ export async function runCli(args: string[]): Promise<void> {
     throw new Error("This setup has only read credentials. Select an administrator credential with --token-env for mutations.");
   }
   const clientTokenEnv = values["token-env"] ?? (metadataPreview ? undefined : readCommand ? config?.readTokenEnv ?? config?.tokenEnv : config?.tokenEnv);
-  const client = new HubClient(hub, metadataPreview && values["token-env"] === undefined ? undefined
+  const client = new HubClient(hub, values.anonymous || metadataPreview && values["token-env"] === undefined ? undefined
     : readClientToken(clientTokenEnv, clientTokenEnv !== undefined));
   if (command === "mcp") {
-    validateArguments(positionals, 1, values, ["hub"]);
+    validateArguments(positionals, 1, values, ["hub", "no-config", "anonymous"]);
     const { runDiscoveryServer } = await import("./mcp.js");
     await runDiscoveryServer(client);
     return;
