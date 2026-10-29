@@ -147,6 +147,10 @@ The summary combines consumer environment/executable prerequisites with metadata
 
 Exit code 1 indicates a failed hub check, selection, or target; warnings, empty selections, and skipped metadata alone exit 0. Terminal output shows individual checks and suggested next actions. `executionVerified` remains false throughout.
 
+## Manage registrations
+
+Use `target edit` for labels/tags, `target enable`/`disable` for discovery state, and `target remove --dry-run` to review one deletion. [Target management](target-management.md) describes previews, no-ops, credentials, and automatic version guards.
+
 ## Terminal and automation output
 
 New setup/connection/diagnostic commands show readable summaries in a terminal. `target list` shows a compact table in a terminal. Piped output remains JSON, and `--json` explicitly requests JSON. Existing registration/get/update/remove and snapshot JSON shapes remain unchanged.

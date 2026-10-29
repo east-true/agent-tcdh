@@ -22,6 +22,9 @@ Usage:
   agent-tcdh target add --command COMMAND [--arg=ARG ...] [--env-var NAME ...] [--name NAME]
   agent-tcdh serve [--host HOST] [--port PORT] [--db FILE]
   agent-tcdh target add <JSON_FILE> [--hub URL]
+  agent-tcdh target edit <ID> [--name NAME] [--description TEXT] [--add-tag TAG ...] [--remove-tag TAG ...]
+                       [--dry-run] [--if-match ETAG] [--hub URL]
+  agent-tcdh target enable|disable <ID> [--dry-run] [--if-match ETAG] [--hub URL]
   agent-tcdh target update <ID> <JSON_FILE> [--if-match ETAG] [--hub URL]
   agent-tcdh target import <URL> --id ID --protocol mcp|a2a [--dry-run] [--hub URL]
   agent-tcdh target refresh <ID> [--dry-run] [--hub URL]
@@ -29,7 +32,7 @@ Usage:
   agent-tcdh target get <ID> [--with-version] [--hub URL]
   agent-tcdh target list [--q QUERY] [--protocol mcp|a2a] [--tag TAG]
                        [--limit COUNT] [--offset OFFSET] [--include-disabled] [--hub URL]
-  agent-tcdh target remove <ID> [--if-match ETAG] [--hub URL]
+  agent-tcdh target remove <ID> [--dry-run] [--if-match ETAG] [--hub URL]
   agent-tcdh registry import-config <FILE> [--format FORMAT] [--select NAME ...] [--prefix PREFIX] [--apply]
   agent-tcdh preset list
   agent-tcdh preset show <NAME> [--select ID ...]
@@ -72,13 +75,15 @@ Options:
   --command COMMAND     Register a local MCP stdio command without executing it
   --arg ARG             Repeat for each literal stdio argument; use --arg=--flag for flags
   --env-var NAME        Declare a consumer-side environment variable, without storing its value
-  --name NAME          Override the imported target's display name
-  --description TEXT   Override the imported target's description
+  --add-tag TAG         Repeat to append a tag during target edit
+  --remove-tag TAG      Repeat to remove a tag during target edit
+  --name NAME          Set a target display name; connect uses a server entry name
+  --description TEXT   Set a target description
   --transport TYPE     MCP import transport: streamable-http or sse
   --a2a-binding TYPE   Select JSONRPC or HTTP+JSON
   --a2a-version VERSION  Select a declared A2A protocol version
   --bearer-env VARIABLE  Environment variable containing the remote Bearer token
-  --dry-run            Print the proposed import or refresh without writing
+  --dry-run            Preview supported changes without writing registry/client files
   --on-conflict POLICY  Bulk import conflict policy (default: error)
   --overwrite          Allow replacement of an existing export file
   --with-version       Include the target ETag in lookup output
@@ -130,6 +135,8 @@ export async function runCli(args: string[]): Promise<void> {
       "include-disabled": { type: "boolean" },
       id: { type: "string" },
       name: { type: "string" },
+      "add-tag": { type: "string", multiple: true },
+      "remove-tag": { type: "string", multiple: true },
       description: { type: "string" },
       transport: { type: "string" },
       "bearer-env": { type: "string" },
@@ -241,7 +248,7 @@ export async function runCli(args: string[]): Promise<void> {
     || command === "registry" && positionals[1] === "import-config" && !values.apply
     || command === "preset" && (positionals[1] !== "import" || !values.apply);
   const readCommand = command === "mcp" || command === "target" && (["list", "get", "check"].includes(positionals[1] ?? "")
-    || positionals[1] === "refresh" && values["dry-run"]);
+    || ["refresh", "edit", "enable", "disable", "remove"].includes(positionals[1] ?? "") && values["dry-run"]);
   if (!readCommand && !metadataPreview && !values["token-env"] && config?.readTokenEnv && !config.tokenEnv && !process.env.AGENT_TCDH_TOKEN) {
     throw new Error("This setup has only read credentials. Select an administrator credential with --token-env for mutations.");
   }
@@ -314,6 +321,18 @@ export async function runCli(args: string[]): Promise<void> {
 
   // 6. Validate command arguments and input files before printing results.
   const action = positionals[1];
+  if (["edit", "enable", "disable"].includes(action ?? "")) {
+    validateArguments(positionals, 3, values, ["hub", "dry-run", "if-match", ...(action === "edit" ? ["name", "description", "add-tag", "remove-tag"] : [])]);
+    const { editTarget } = await import("./targets/edit.js");
+    const result = await editTarget(client, positionals[2]!, action === "edit" ? {
+      name: values.name, description: values.description, addTags: values["add-tag"], removeTags: values["remove-tag"],
+    } : { enabled: action === "enable" }, { dryRun: values["dry-run"], ifMatch: values["if-match"] });
+    printOnboarding({ action, ...result }, values.json, () => result.id + ": " + (result.applied ? "Updated." : result.hasChanges
+      ? "Preview only; no registry changes." : "No changes needed; the observed registration already matches.")
+      + "\nBase version: " + result.baseVersion
+      + "\n" + result.changes.map((change) => change.field + ": " + JSON.stringify(change.before) + " -> " + JSON.stringify(change.after)).join("\n"));
+    return;
+  }
   if (action === "check") {
     validateArguments(positionals, 3, values, ["hub", "bearer-env"]);
     const id = targetIdSchema.parse(positionals[2]);
@@ -403,10 +422,15 @@ export async function runCli(args: string[]): Promise<void> {
     return;
   }
   if (action === "get" || action === "remove") {
-    validateArguments(positionals, 3, values, action === "get" ? ["hub", "with-version"] : ["hub", "if-match"]);
+    validateArguments(positionals, 3, values, action === "get" ? ["hub", "with-version"] : ["hub", "if-match", "dry-run"]);
     const id = targetIdSchema.parse(positionals[2]);
     if (action === "get") {
       printJson(values["with-version"] ? await client.getVersioned(id) : await client.get(id));
+    } else if (values["dry-run"]) {
+      const { previewRemoval } = await import("./targets/edit.js");
+      const result = await previewRemoval(client, id, values["if-match"]);
+      printOnboarding({ action, ...result }, values.json, () => "Removal preview: " + result.id + " (" + JSON.stringify(result.target.name) + ")"
+        + "\nBase version: " + result.baseVersion + "\nNo registry changes. Use --if-match with this version when removing the target.");
     } else {
       await client.remove(id, values["if-match"]);
       printJson({ deleted: id });
