@@ -113,6 +113,7 @@ Bring existing MCP settings into the shared registry or select bundled documenta
 
 ```sh
 node dist/index.js registry import-config /path/to/config.toml --select docs
+node dist/index.js registry import-config /path/to/config.toml --select docs --compare --on-conflict skip
 node dist/index.js registry import-config /path/to/config.toml --select docs --apply
 node dist/index.js preset list
 node dist/index.js preset import public-docs --select openai-docs --apply
@@ -124,6 +125,8 @@ node dist/index.js target disable openai-docs --dry-run
 Configuration imports and presets default to offline previews; `--apply` registers the selected connections atomically. Import preserves the source file, replaces known inline environment/Bearer values with variable references, and reports unsupported settings. Review literal command arguments before applying. `doctor --all` explicitly inspects matching registrations with bounded concurrency and per-target results; it fetches remote metadata without executing tools/tasks. See [configuration import and presets](docs/config-import.md) for formats, conflicts, and consumer-side credentials.
 
 Edit labels/tags or enable/disable registrations without rewriting JSON files. Use `--dry-run` to review changes; new edit/state commands save against the observed registration version. See [target management](docs/target-management.md) for conflict handling and deletion previews.
+
+Use `registry diff snapshot.json` or an import preview with `--compare` to review added, changed, unchanged, and retained definitions against the hub. Comparison is read-only; see [registry comparison](docs/registry-comparison.md) for conflict policies and consistency limits.
 
 ## MCP discovery
 

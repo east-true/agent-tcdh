@@ -2,6 +2,9 @@
 
 ## Unreleased
 
+- Add read-only `registry diff` and opt-in config/preset `--compare` previews, with field-level classifications and import-policy conflict/effect summaries.
+- Reject malformed UTF-8 snapshot files and omit source values from JSON syntax diagnostics.
+
 - Add file-free `target edit`, `enable`, and `disable` with before/after previews, idempotent no-ops, and automatic conditional writes.
 - Add read-only `target remove --dry-run` reports with the reviewed registration version for guarded deletion.
 
