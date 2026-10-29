@@ -1,6 +1,6 @@
 # Import client configurations and presets
 
-These commands are available from source on `main` for the next release. Published npm `0.1.1` does not include them. Run `npm run build` first and use `node dist/index.js` from the repository root.
+Requires AgentTCDH `0.1.2` or later. From source, run `npm ci` and `npm run build` first; examples below use `node dist/index.js` from the repository root. An installed package uses `agent-tcdh` instead. See the [v0.1.2 release notes](releases/v0.1.2.md) for installation and publication checks.
 
 ## Bring existing MCP connections into the registry
 

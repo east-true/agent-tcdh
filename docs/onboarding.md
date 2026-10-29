@@ -1,6 +1,6 @@
 # Guided setup, connection, and diagnostics
 
-These commands are implemented on `main` for the next release. The published `0.1.1` CLI does not include them. From a source checkout, run `npm ci` and `npm run build`, then replace `agent-tcdh` below with `node dist/index.js`. The default suite uses temporary files and local protocol fixtures; it does not modify personal agent configuration or run models.
+Requires AgentTCDH `0.1.2` or later. From a source checkout, run `npm ci` and `npm run build`, then replace `agent-tcdh` below with `node dist/index.js`. See the [v0.1.2 release notes](releases/v0.1.2.md) for installation and publication checks. The default suite uses temporary files and local protocol fixtures; it does not modify personal agent configuration or run models.
 
 ## Initialize once
 

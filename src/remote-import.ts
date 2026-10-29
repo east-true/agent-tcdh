@@ -2,6 +2,7 @@ import { Client } from "@modelcontextprotocol/sdk/client/index.js";
 import { StreamableHTTPClientTransport } from "@modelcontextprotocol/sdk/client/streamableHttp.js";
 import { SSEClientTransport } from "@modelcontextprotocol/sdk/client/sse.js";
 import { z } from "zod";
+import { PACKAGE_VERSION } from "./version.js";
 import { a2aBindingSchema, a2aVersionSchema, httpUrl, protocolSchema, targetDefinitionSchema, targetIdSchema } from "./targets/schema.js";
 import type { TargetDefinition } from "./targets/schema.js";
 import { agentCardSchema, selectA2aInterface } from "./targets/a2a.js";
@@ -157,7 +158,7 @@ async function inspectMcp(
   timeoutMs: number,
 ) {
   // 1. Connect the remote transport and retrieve the server name.
-  const client = new Client({ name: "agent-tcdh-import", version: "0.1.1" });
+  const client = new Client({ name: "agent-tcdh-import", version: PACKAGE_VERSION });
   const transport = options.transport === "sse"
     ? new SSEClientTransport(url, { fetch: request })
     : new StreamableHTTPClientTransport(url, { fetch: request });

@@ -33,30 +33,26 @@ The consumer owns target selection, protocol clients, credentials, and execution
 
 ## Quickstart
 
-Use **Node.js 24 or newer** and npm. Start the published hub:
-
-```sh
-npx --yes agent-tcdh@0.1.1 serve
-```
-
-For a global installation:
-
-```sh
-npm install --global agent-tcdh@0.1.1
-agent-tcdh --help
-agent-tcdh serve
-```
-
-To run the isolated demo from source:
+Use **Node.js 24 or newer** and npm. This checkout targets **v0.1.2**. Run the current version from source:
 
 ```sh
 git clone https://github.com/jiind/agent-tcdh.git
 cd agent-tcdh
 npm ci
-npm run demo
+npm run build
+node dist/index.js init
+node dist/index.js serve
 ```
 
-The [v0.1.1 release](https://github.com/jiind/agent-tcdh/releases/tag/v0.1.1) provides the built tarball and checksums. Source commands below use the repository checkout; an installed CLI uses `agent-tcdh` in place of `npm run cli --`.
+`init` saves settings; `serve` starts the hub. For an isolated demonstration instead, run `npm run demo` after installing dependencies.
+
+The already published `0.1.1` package still supports the original CLI:
+
+```sh
+npx --yes agent-tcdh@0.1.1 serve
+```
+
+The [v0.1.2 notes](docs/releases/v0.1.2.md) describe the new features, local artifact installation, and publication checks. The [v0.1.1 GitHub release](https://github.com/jiind/agent-tcdh/releases/tag/v0.1.1) provides that earlier version's built tarball. GitHub and npm publication are separate from source preparation; verify availability before installing a new published version. Source commands below use the repository checkout; an installed CLI uses `agent-tcdh` in place of `npm run cli --` or `node dist/index.js`.
 
 The demo starts an isolated hub, registers three local targets, discovers them, and calls HTTP MCP, stdio MCP, and A2A targets directly. It checks execution receipts and cleans up. No account, API key, external service, or model is needed.
 
@@ -87,9 +83,9 @@ The snapshot includes OpenAI Docs, Toss Payments Docs, Microsoft Learn, Cloudfla
 
 These are working examples, not a provider allowlist. Register other MCP servers and A2A agents using the [generic definition schema](docs/reference.md#search-and-connection-definitions), or [import their remote metadata](docs/reference.md#import-and-refresh-metadata).
 
-## Guided setup on main
+## Guided setup in v0.1.2
 
-The next release adds guided setup, file-free registration, client configuration generation for seven profiles, configuration import, presets, and diagnostics. These commands are available from a source checkout on `main`; published npm `0.1.1` uses the original CLI.
+Version `0.1.2` adds guided setup, file-free registration, seven connection profiles, configuration import, presets, diagnostics, target editing, and registry comparison. Use this source checkout or a prepared `0.1.2` package; npm `0.1.1` does not include these commands.
 
 ```sh
 npm run build
@@ -222,7 +218,7 @@ Real-agent/model checks are also opt-in and can consume model usage. See [verifi
 - [Local demo](docs/local-demo.md)
 - [MCP/A2A agent registration compatibility](docs/agent-compatibility.md)
 - [Actual-agent verification](docs/agent-verification.md)
-- [Changelog](CHANGELOG.md) and [release process](docs/releasing.md)
+- [v0.1.2 release notes](docs/releases/v0.1.2.md), [changelog](CHANGELOG.md), and [release process](docs/releasing.md)
 - [Contributing](CONTRIBUTING.md) and [security policy](SECURITY.md)
 
 Project documentation, comments, and application messages use English. Original provider metadata and intentional Unicode fixtures retain their original text.
