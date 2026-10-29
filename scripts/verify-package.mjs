@@ -46,7 +46,7 @@ try {
   const [manifest] = manifests;
   assert.equal(manifest.name, "agent-tcdh");
   const files = new Set(manifest.files.map((entry) => entry.path));
-  for (const required of ["dist/index.js", "dist/onboarding/connect.js", "dist/onboarding/doctor.js", "docs/onboarding.md", "dist/onboarding/import-config.js", "dist/onboarding/presets.js", "docs/config-import.md", "dist/app.js", "dist/a2a-http.js", "dist/targets/check.js", "docs/agent-compatibility.md", "docs/agent-verification.md", "examples/a2a.json", "README.md", "LICENSE", "CONTRIBUTING.md", "SECURITY.md", "CHANGELOG.md"]) {
+  for (const required of ["dist/index.js", "dist/onboarding/connect.js", "dist/onboarding/doctor.js", "dist/onboarding/doctor-batch.js", "docs/onboarding.md", "dist/onboarding/import-config.js", "dist/onboarding/presets.js", "docs/config-import.md", "dist/app.js", "dist/a2a-http.js", "dist/targets/check.js", "docs/agent-compatibility.md", "docs/agent-verification.md", "examples/a2a.json", "README.md", "LICENSE", "CONTRIBUTING.md", "SECURITY.md", "CHANGELOG.md"]) {
     assert.ok(files.has(required), "Required package file is missing: " + required);
   }
   for (const required of ["examples/local-demo.mjs", "examples/demo-targets.mjs", "docs/local-demo.md", "examples/public-docs-registry.json", "docs/public-mcp-verification.md", "docs/selection-verification.md", "docs/model-target-verification.md", "docs/platform-compatibility.md", "docs/reference.md"]) {
@@ -119,6 +119,14 @@ try {
   const doctor = await runCommand(executable, [...prefix, "doctor"], { cwd: installation, env: environment });
   assert.equal(JSON.parse(doctor.stdout).status, "passed");
   assert.equal(JSON.parse(doctor.stdout).executionVerified, false);
+  const batchDoctor = await runCommand(executable, [...prefix, "doctor", "--all", "--q", "packaged-local", "--concurrency", "2"], { cwd: installation, env: environment });
+  const batchReport = JSON.parse(batchDoctor.stdout);
+  assert.equal(batchReport.batch.complete, true);
+  assert.equal(batchReport.batch.matched, 1);
+  assert.equal(batchReport.batch.summary.passed, 1);
+  assert.equal(batchReport.batch.targets[0].metadata.scope, "none");
+  assert.ok(batchReport.batch.targets[0].targetVersion);
+  assert.equal(batchReport.batch.targets[0].executionVerified, false);
 
   // 4. Verify JSON failure diagnostics for an unreachable metadata endpoint using the installed CLI.
   let diagnostic;
@@ -152,7 +160,7 @@ try {
   assert.ok(demoResult.executions.some((entry) => entry.transport === "stdio"));
   assert.equal(demoResult.remainingTargets.length, 2);
   console.log(JSON.stringify({ package: manifest.filename, isolatedProductionInstall: true,
-    installedBinary: true, onboarding: true, configImport: true, presets: true, documentation: true, targetDiagnostics: true, localDemo: true, initial, restarted, persistence: true }, null, 2));
+    installedBinary: true, onboarding: true, batchDiagnostics: true, configImport: true, presets: true, documentation: true, targetDiagnostics: true, localDemo: true, initial, restarted, persistence: true }, null, 2));
 } finally {
   // 7. Clean up only the processes and temporary files created by this run.
   try {

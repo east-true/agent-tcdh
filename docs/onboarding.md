@@ -123,6 +123,28 @@ With `--target`, it reads that registration and checks environment references. F
 
 `passed`, `warning`, `failed`, and `skipped` describe the reported check scope. `executionVerified` remains `false`. A failed check exits with code 1; warnings and skipped checks do not alone cause a failure. Credential values and raw remote error bodies are excluded from diagnostics.
 
+### Inspect multiple registrations
+
+```sh
+agent-tcdh doctor --all
+agent-tcdh doctor --all --tag imported-config --protocol mcp --concurrency 3
+agent-tcdh doctor --all --q docs --include-disabled --limit 200 --json
+```
+
+`--all` explicitly opts into inspecting every registration matching the selected filters. Without it, ordinary `doctor` still checks only the hub; `--target ID` still inspects one target. Batch filters and resource options require `--all`; `--target` and `--all` cannot be combined. Keyword, protocol, and tag filters have the same meaning as `target list`. Disabled registrations are excluded unless `--include-disabled` is supplied.
+
+The batch first collects matching IDs through the read-only paginated discovery API. `--limit` is a safety cap, default 100, allowed range 1–1000. If the match count exceeds that cap, selection fails before any provider metadata requests or local executable checks. It does not silently truncate the list. Narrow the filters or explicitly increase the cap. Detected changes in page totals, duplicate IDs, incomplete pages, and discovery errors also stop selection before target inspection.
+
+The discovery list is not a transactional snapshot: a same-count concurrent edit may escape page consistency checks. Each selected target is reread with its current ETag immediately before inspection, and each report includes `targetVersion`. Membership follows the collected IDs; a later edit can change a target's filter fields or connection. A removed/unreadable target gets an individual failure, and the remaining targets are still checked. Registry definitions and versions are never changed by diagnostics.
+
+`--concurrency` bounds simultaneous target inspections, default 3, allowed range 1–8. Results retain discovery order even when requests complete in a different order. Each remote metadata inspection retains the existing 10-second timeout and import limits; hub API reads have separate 15-second timeouts. Large batches can take multiple waves of requests.
+
+JSON adds a `batch` object with the selection, `matched` count, `complete`, per-target reports, and `summary` counts for `passed`, `warning`, and `failed`. `complete: true` means all selected targets received a result, including individual failures. A selection failure leaves `complete: false`, no target results, and a fixed `selectionIssue`. A failed initial hub discovery skips the batch and reports the reason in the top-level checks. An empty matching set is a warning.
+
+The summary combines consumer environment/executable prerequisites with metadata findings. A target can pass its applicable checks while metadata is skipped, such as stdio or unsupported OAuth inspection. Examine each target's `metadata.status`, `scope`, and `issues` for that distinction; `passed` does not establish tool/task execution. Stdio commands are never launched. Remote checks only list MCP tools or retrieve A2A cards. Hub credentials are used for hub access; target credential references are resolved independently from this terminal's environment. Run diagnostics in an environment that represents the consuming agent.
+
+Exit code 1 indicates a failed hub check, selection, or target; warnings, empty selections, and skipped metadata alone exit 0. Terminal output shows individual checks and suggested next actions. `executionVerified` remains false throughout.
+
 ## Terminal and automation output
 
 New setup/connection/diagnostic commands show readable summaries in a terminal. `target list` shows a compact table in a terminal. Piped output remains JSON, and `--json` explicitly requests JSON. Existing registration/get/update/remove and snapshot JSON shapes remain unchanged.

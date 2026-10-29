@@ -114,9 +114,10 @@ node dist/index.js registry import-config /path/to/config.toml --select docs
 node dist/index.js registry import-config /path/to/config.toml --select docs --apply
 node dist/index.js preset list
 node dist/index.js preset import public-docs --select openai-docs --apply
+node dist/index.js doctor --all --tag imported-config
 ```
 
-Configuration imports and presets default to offline previews; `--apply` registers the selected connections atomically. Import preserves the source file, replaces known inline environment/Bearer values with variable references, and reports unsupported settings. Review literal command arguments before applying. See [configuration import and presets](docs/config-import.md) for formats, conflicts, and consumer-side credentials.
+Configuration imports and presets default to offline previews; `--apply` registers the selected connections atomically. Import preserves the source file, replaces known inline environment/Bearer values with variable references, and reports unsupported settings. Review literal command arguments before applying. `doctor --all` explicitly inspects matching registrations with bounded concurrency and per-target results; it fetches remote metadata without executing tools/tasks. See [configuration import and presets](docs/config-import.md) for formats, conflicts, and consumer-side credentials.
 
 ## MCP discovery
 
