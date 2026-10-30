@@ -2,8 +2,9 @@
 
 ## Unreleased
 
-- Add offline `disconnect` previews and explicit named-entry removal for all seven clients, with exact backups, no-ops, and opt-in TOML normalization.
+- Add offline whole-file configuration restoration with previews, exact recovery from selected backups, and backups of replaced destination files.
 
+- Add offline `disconnect` previews and explicit named-entry removal for all seven clients, with exact backups, no-ops, and opt-in TOML normalization.
 - Add read-only `connect --check FILE` across all seven client profiles, with missing/drift results, redacted field differences, and diagnostic exit codes.
 
 ## 0.1.2 — 2026-10-30

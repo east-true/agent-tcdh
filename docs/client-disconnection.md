@@ -53,3 +53,5 @@ Terminal output is readable text; redirected output is JSON, as is explicit `--j
 Validation and write failures print diagnostics on stderr and exit 1. `hasChanges` identifies a prepared removal; `applied` and `changed` become true only after an actual replacement. `executionVerified` is always false because this operation edits local configuration only.
 
 Use [saved connection checks](connection-check.md) to compare an entry with the current profile, or ordinary `connect --write FILE` to add it again.
+
+Use [configuration restoration](configuration-restore.md) to preview restoring the complete pre-removal file from the returned backup. Applying a restore also backs up the current file.
