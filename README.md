@@ -128,9 +128,9 @@ Edit labels/tags or enable/disable registrations without rewriting JSON files. U
 
 Use `registry diff snapshot.json` or an import preview with `--compare` to review added, changed, unchanged, and retained definitions against the hub. Comparison is read-only; see [registry comparison](docs/registry-comparison.md) for conflict policies and consistency limits.
 
-## Unreleased improvements
+## Connection management in v0.1.3
 
-Source checkouts include these additions, which are not in the published `0.1.2` package:
+Version `0.1.3` adds the following commands. Version `0.1.2` does not include them. Use this source checkout or a verified `0.1.3` artifact; see the [v0.1.3 release notes](docs/releases/v0.1.3.md) for installation and publication checks.
 
 - `connect --check FILE` compares a saved profile with the expected hub address, credential references, and bridge paths. See [connection checks](docs/connection-check.md).
 - `disconnect CLIENT --file FILE` previews named-entry removal; `--apply` writes it with an exact backup. See [client disconnection](docs/client-disconnection.md).
@@ -231,7 +231,7 @@ Real-agent/model checks are also opt-in and can consume model usage. See [verifi
 - [Local demo](docs/local-demo.md)
 - [MCP/A2A agent registration compatibility](docs/agent-compatibility.md)
 - [Actual-agent verification](docs/agent-verification.md)
-- [v0.1.2 release notes](docs/releases/v0.1.2.md), [changelog](CHANGELOG.md), and [release process](docs/releasing.md)
+- [v0.1.3 release notes](docs/releases/v0.1.3.md), [v0.1.2 release notes](docs/releases/v0.1.2.md), [changelog](CHANGELOG.md), and [release process](docs/releasing.md)
 - [Contributing](CONTRIBUTING.md) and [security policy](SECURITY.md)
 
 Project documentation, comments, and application messages use English. Original provider metadata and intentional Unicode fixtures retain their original text.

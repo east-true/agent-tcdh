@@ -2,11 +2,16 @@
 
 ## Unreleased
 
-- Add bounded, read-only configuration backup listings with modification-time ordering, metadata status, and installation-specific restore preview commands.
+No changes yet.
 
+## 0.1.3 — 2026-10-30
+
+- Add bounded, read-only configuration backup listings with modification-time ordering, metadata status, and installation-specific restore preview commands.
 - Add offline whole-file configuration restoration with previews, exact recovery from selected backups, and backups of replaced destination files.
 - Add offline `disconnect` previews and explicit named-entry removal for all seven clients, with exact backups, no-ops, and opt-in TOML normalization.
 - Add read-only `connect --check FILE` across all seven client profiles, with missing/drift results, redacted field differences, and diagnostic exit codes.
+
+Node.js 24+, SQLite schema version 2, snapshot format version 1, and HTTP/MCP/A2A contracts remain unchanged. See the [release notes](docs/releases/v0.1.3.md) for recovery scope and publication checks.
 
 ## 0.1.2 — 2026-10-30
 

@@ -4,7 +4,7 @@ CLI, connection definitions, protocol details, authentication, and deployment se
 
 ## CLI
 
-This reference targets AgentTCDH `0.1.2`. See [guided setup](onboarding.md), including [batch diagnostics](onboarding.md#inspect-multiple-registrations), [configuration import and presets](config-import.md), [client connections](client-connections.md), [target management](target-management.md), and [registry comparison](registry-comparison.md). Version `0.1.1` supports the original CLI and does not include these additions. Check the [release notes](releases/v0.1.2.md) for installation and publication status.
+This reference targets AgentTCDH `0.1.3`. See [guided setup](onboarding.md), including [batch diagnostics](onboarding.md#inspect-multiple-registrations), [configuration import and presets](config-import.md), [client connections](client-connections.md), [target management](target-management.md), and [registry comparison](registry-comparison.md). Version `0.1.1` supports the original CLI and does not include these additions. Check the [release notes](releases/v0.1.3.md) for installation and publication status.
 
 ```text
 agent-tcdh init [--yes] [--config FILE] [--hub URL] [--host HOST] [--port PORT] [--db FILE]
@@ -41,7 +41,7 @@ agent-tcdh registry import <JSON_FILE> [--on-conflict error|skip|replace] [--dry
 agent-tcdh mcp [--hub URL] [--no-config] [--anonymous | --token-env VARIABLE]
 ```
 
-The `--check FILE` connection mode, `disconnect`, `config backups`, and `config restore` commands are unreleased source additions; published `0.1.2` does not support them. See [client disconnection](client-disconnection.md) for named removal previews, backups, and TOML normalization, [backup discovery](configuration-backups.md) for metadata listings, and [configuration restoration](configuration-restore.md) for whole-file recovery. See [saved connection checks](connection-check.md) for results, exit codes, and comparison limits. Other commands below retain their `0.1.2` behavior.
+The `--check FILE` connection mode, `disconnect`, `config backups`, and `config restore` commands require `0.1.3`; version `0.1.2` does not support them. See [client disconnection](client-disconnection.md) for named removal previews, backups, and TOML normalization, [backup discovery](configuration-backups.md) for metadata listings, and [configuration restoration](configuration-restore.md) for whole-file recovery. See [saved connection checks](connection-check.md) for results, exit codes, and comparison limits. Other commands below retain their `0.1.2` behavior.
 
 The default command is `serve`. Existing administrative commands print JSON; setup, edit/state, and comparison commands show readable terminal summaries with JSON when redirected or requested using `--json`; failures print diagnostics to stderr and exit with code 1. `target check` also prints failed/skipped reports as JSON and uses the exit codes below. Use `--help` for all options.
 
