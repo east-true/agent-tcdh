@@ -16,6 +16,7 @@ Usage:
   agent-tcdh connect <CLIENT> [--print | --write FILE | --check FILE] [--dry-run] [--replace]
                        CLIENT: codex, opencode, opencode-v1, claude-code, gemini-cli, cursor, vscode
   agent-tcdh disconnect <CLIENT> --file FILE [--name NAME] [--apply | --dry-run] [--normalize]
+  agent-tcdh config restore <BACKUP_FILE> --file FILE [--apply | --dry-run]
   agent-tcdh doctor [--target ID | --all] [--hub URL]
                        [--q QUERY] [--protocol mcp|a2a] [--tag TAG] [--include-disabled]
                        [--limit COUNT] [--concurrency COUNT]
@@ -58,7 +59,7 @@ Options:
   --help, -h            Show usage
   --compare             Compare a config/preset preview with current hub metadata (read-only)
   --details             Include full definitions and print JSON comparison output
-  --apply               Apply a reviewed import or client disconnection; previews are the default
+  --apply               Apply an import, disconnection, or config restore; previews are the default
   --format FORMAT       Client config format: auto, codex, opencode, opencode-v1, mcp-json
   --select NAME         Repeat to select source server names or preset target ids
   --prefix PREFIX       Namespace imported target ids
@@ -72,7 +73,7 @@ Options:
   --read-token-env NAME  Record the read credential environment name during setup
   --print               Print only the generated client configuration fragment
   --check FILE          Check a saved client profile without writes or network calls
-  --file FILE           Select the client configuration for disconnect
+  --file FILE           Select the destination for disconnect or config restore
   --normalize           Allow TOML normalization during disconnect, with an exact backup
   --write FILE          Merge the hub into this explicit client file, preserving a backup
   --replace             Replace a conflicting named hub entry in a client configuration
@@ -200,6 +201,23 @@ export async function runCli(args: string[]): Promise<void> {
       + (result.backup ? "\nBackup: " + JSON.stringify(result.backup) : "")
       + (result.notes.length ? "\n" + result.notes.join("\n") : "") + "\n" + result.instructions);
     process.exitCode = result.ready ? 0 : 1;
+    return;
+  }
+  if (command === "config") {
+    if (positionals[1] !== "restore") {
+      throw new Error("Unknown configuration command. Run --help for usage.");
+    }
+    validateArguments(positionals, 3, values, ["file", "apply", "dry-run"]);
+    if (values.config !== undefined || values.file === undefined || values.apply && values["dry-run"]) {
+      throw new Error("Use config restore BACKUP_FILE --file FILE with optional --json and either --apply or --dry-run. Setup defaults are not used.");
+    }
+    const { restoreConfig } = await import("./onboarding/restore.js");
+    const result = await restoreConfig({ source: positionals[2]!, file: values.file, apply: values.apply });
+    printOnboarding(result, values.json, () => result.reason.toUpperCase() + ": " + JSON.stringify(result.path)
+      + "\nSource: " + JSON.stringify(result.source)
+      + "\nBytes: " + (result.destinationBytes ?? "missing") + " -> " + result.sourceBytes
+      + (result.backup ? "\nBackup of previous file: " + JSON.stringify(result.backup) : "")
+      + "\n" + result.instructions);
     return;
   }
   const config = values["no-config"] ? undefined : await loadConfig(values.config);
