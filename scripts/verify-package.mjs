@@ -48,7 +48,7 @@ try {
   const [manifest] = manifests;
   assert.equal(manifest.name, "agent-tcdh");
   const files = new Set(manifest.files.map((entry) => entry.path));
-  for (const required of ["dist/index.js", "dist/version.js", "dist/onboarding/connect.js", "dist/onboarding/doctor.js", "dist/onboarding/doctor-batch.js", "docs/onboarding.md", "docs/client-connections.md", "docs/connection-check.md", "dist/onboarding/import-config.js", "dist/onboarding/presets.js", "docs/config-import.md", "dist/app.js", "dist/a2a-http.js", "dist/targets/check.js", "dist/targets/edit.js", "dist/registry/diff.js", "docs/registry-comparison.md", "docs/target-management.md", "docs/agent-compatibility.md", "docs/agent-verification.md", "examples/a2a.json", "README.md", "LICENSE", "CONTRIBUTING.md", "SECURITY.md", "CHANGELOG.md"]) {
+  for (const required of ["dist/index.js", "dist/version.js", "dist/onboarding/connect.js", "dist/onboarding/disconnect.js", "dist/onboarding/doctor.js", "dist/onboarding/doctor-batch.js", "docs/onboarding.md", "docs/client-connections.md", "docs/connection-check.md", "docs/client-disconnection.md", "dist/onboarding/import-config.js", "dist/onboarding/presets.js", "docs/config-import.md", "dist/app.js", "dist/a2a-http.js", "dist/targets/check.js", "dist/targets/edit.js", "dist/registry/diff.js", "docs/registry-comparison.md", "docs/target-management.md", "docs/agent-compatibility.md", "docs/agent-verification.md", "examples/a2a.json", "README.md", "LICENSE", "CONTRIBUTING.md", "SECURITY.md", "CHANGELOG.md"]) {
     assert.ok(files.has(required), "Required package file is missing: " + required);
   }
   for (const required of ["examples/local-demo.mjs", "examples/demo-targets.mjs", "docs/local-demo.md", "examples/public-docs-registry.json", "docs/public-mcp-verification.md", "docs/selection-verification.md", "docs/model-target-verification.md", "docs/platform-compatibility.md", "docs/reference.md"]) {
@@ -98,6 +98,15 @@ try {
   const connectionCheck = await runCommand(executable, [...prefix, "connect", "opencode", "--check", consumerConfig], { cwd: installation, env: environment });
   assert.equal(JSON.parse(connectionCheck.stdout).reason, "matched");
   assert.equal(JSON.parse(connectionCheck.stdout).executionVerified, false);
+  const savedConsumer = await readFile(consumerConfig, "utf8");
+  const disconnectPreview = await runCommand(executable, [...prefix, "disconnect", "opencode", "--file", consumerConfig], { cwd: installation, env: environment });
+  assert.equal(JSON.parse(disconnectPreview.stdout).reason, "removal-ready");
+  assert.equal(await readFile(consumerConfig, "utf8"), savedConsumer);
+  const disconnected = await runCommand(executable, [...prefix, "disconnect", "opencode", "--file", consumerConfig, "--apply"], { cwd: installation, env: environment });
+  const removal = JSON.parse(disconnected.stdout);
+  assert.equal(removal.applied, true);
+  assert.equal(await readFile(removal.backup, "utf8"), savedConsumer);
+  assert.deepEqual(JSON.parse(await readFile(consumerConfig, "utf8")).mcp.servers, {});
   const codex = await runCommand(executable, [...prefix, "connect", "codex", "--print"], { cwd: installation, env: environment });
   assert.ok(codex.stdout.includes("bearer_token_env_var"));
   assert.ok(!codex.stdout.includes(credentials.readToken));
@@ -216,7 +225,7 @@ try {
   assert.ok(demoResult.executions.some((entry) => entry.transport === "stdio"));
   assert.equal(demoResult.remainingTargets.length, 2);
   console.log(JSON.stringify({ package: manifest.filename, isolatedProductionInstall: true,
-    installedBinary: true, onboarding: true, registryComparison: true, targetManagement: true, clientProfiles: true, batchDiagnostics: true, configImport: true, presets: true, documentation: true, targetDiagnostics: true, localDemo: true, initial, restarted, persistence: true }, null, 2));
+    installedBinary: true, onboarding: true, registryComparison: true, targetManagement: true, clientProfiles: true, clientDisconnection: true, batchDiagnostics: true, configImport: true, presets: true, documentation: true, targetDiagnostics: true, localDemo: true, initial, restarted, persistence: true }, null, 2));
 } finally {
   // 7. Clean up only the processes and temporary files created by this run.
   try {

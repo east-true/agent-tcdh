@@ -45,3 +45,5 @@ node dist/index.js connect cursor --write ./cursor-mcp.json --replace
 A replacement updates the named entry and keeps an exact backup through the existing configuration writer. Review intentional custom fields before replacing them. The check does not change them automatically.
 
 `matched` verifies local configuration only. It does not verify that the agent loaded the file, has its required environment variables, can authenticate, or can execute a target. Run `doctor` separately to inspect hub access, then use the consuming client to verify its actual behavior. Every check report sets `executionVerified: false`.
+
+To remove a saved entry instead of updating it, use the separate [disconnection preview and apply command](client-disconnection.md). It selects by file and entry name, so stale bridge paths and unavailable hub credentials do not prevent cleanup.

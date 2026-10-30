@@ -130,7 +130,7 @@ Use `registry diff snapshot.json` or an import preview with `--compare` to revie
 
 ## Unreleased improvements
 
-Source checkouts additionally support `connect --check FILE` to inspect saved client profiles without changing files or contacting the hub. It reports missing entries and differences in hub addresses, credential references, and local bridge paths across all seven profiles. See [connection checks](docs/connection-check.md) for result codes and verification scope. This command is not included in the published `0.1.2` package.
+Source checkouts additionally support `connect --check FILE` to inspect saved client profiles without changing files or contacting the hub. It reports missing entries and differences in hub addresses, credential references, and local bridge paths across all seven profiles. See [connection checks](docs/connection-check.md) for result codes and verification scope. Use `disconnect CLIENT --file FILE` to preview removing a named hub entry, then add `--apply` to save it with an exact backup. See [client disconnection](docs/client-disconnection.md). These commands are not included in the published `0.1.2` package.
 
 ## MCP discovery
 
