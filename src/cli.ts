@@ -15,6 +15,7 @@ Usage:
   agent-tcdh init [--yes] [--config FILE] [--hub URL] [--host HOST] [--port PORT] [--db FILE]
   agent-tcdh connect <CLIENT> [--print | --write FILE | --check FILE] [--dry-run] [--replace]
                        CLIENT: codex, opencode, opencode-v1, claude-code, gemini-cli, cursor, vscode
+  agent-tcdh disconnect <CLIENT> --file FILE [--name NAME] [--apply | --dry-run] [--normalize]
   agent-tcdh doctor [--target ID | --all] [--hub URL]
                        [--q QUERY] [--protocol mcp|a2a] [--tag TAG] [--include-disabled]
                        [--limit COUNT] [--concurrency COUNT]
@@ -57,7 +58,7 @@ Options:
   --help, -h            Show usage
   --compare             Compare a config/preset preview with current hub metadata (read-only)
   --details             Include full definitions and print JSON comparison output
-  --apply               Apply a reviewed config/preset import; previews are the default
+  --apply               Apply a reviewed import or client disconnection; previews are the default
   --format FORMAT       Client config format: auto, codex, opencode, opencode-v1, mcp-json
   --select NAME         Repeat to select source server names or preset target ids
   --prefix PREFIX       Namespace imported target ids
@@ -71,6 +72,8 @@ Options:
   --read-token-env NAME  Record the read credential environment name during setup
   --print               Print only the generated client configuration fragment
   --check FILE          Check a saved client profile without writes or network calls
+  --file FILE           Select the client configuration for disconnect
+  --normalize           Allow TOML normalization during disconnect, with an exact backup
   --write FILE          Merge the hub into this explicit client file, preserving a backup
   --replace             Replace a conflicting named hub entry in a client configuration
   --all                 Inspect all matching targets during doctor (default limit: 100)
@@ -81,7 +84,7 @@ Options:
   --env-var NAME        Declare a consumer-side environment variable, without storing its value
   --add-tag TAG         Repeat to append a tag during target edit
   --remove-tag TAG      Repeat to remove a tag during target edit
-  --name NAME          Set a target display name; connect uses a server entry name
+  --name NAME          Set a target display name; connect/disconnect use a server entry name
   --description TEXT   Set a target description
   --transport TYPE     MCP import transport: streamable-http or sse
   --a2a-binding TYPE   Select JSONRPC or HTTP+JSON
@@ -122,6 +125,8 @@ export async function runCli(args: string[]): Promise<void> {
       "read-token-env": { type: "string" },
       print: { type: "boolean" },
       write: { type: "string" },
+      file: { type: "string" },
+      normalize: { type: "boolean" },
       check: { type: "string" },
       replace: { type: "boolean" },
       target: { type: "string" },
@@ -180,6 +185,21 @@ export async function runCli(args: string[]): Promise<void> {
       + (result.credentialEnvironmentVariables.length ? "\nSet these environment variables before starting: " + result.credentialEnvironmentVariables.join(", ") : result.mode === "local" ? "\nLocal setup without explicit credential references; configure tokens before sharing the listener." : "\nExisting hub selected; configure its credential references if required.")
       + "\nNext commands" + (result.mode === "local" ? " (run serve in another terminal)" : "") + ":\n"
       + result.nextCommands.map((args) => formatCommand(args)).join("\n"));
+    return;
+  }
+  if (command === "disconnect") {
+    validateArguments(positionals, 2, values, ["file", "name", "apply", "dry-run", "normalize"]);
+    if (values.config !== undefined || values.file === undefined || values.apply && values["dry-run"]) {
+      throw new Error("Use disconnect CLIENT --file FILE with optional --name, --normalize, --json, and either --apply or --dry-run. Setup configuration is not used.");
+    }
+    const { disconnectClient } = await import("./onboarding/disconnect.js");
+    const result = await disconnectClient({ client: positionals[1]!, file: values.file, name: values.name,
+      apply: values.apply, normalize: values.normalize });
+    printOnboarding(result, values.json, () => result.reason.toUpperCase() + ": " + JSON.stringify(result.path)
+      + "\nNamed entry: " + result.name
+      + (result.backup ? "\nBackup: " + JSON.stringify(result.backup) : "")
+      + (result.notes.length ? "\n" + result.notes.join("\n") : "") + "\n" + result.instructions);
+    process.exitCode = result.ready ? 0 : 1;
     return;
   }
   const config = values["no-config"] ? undefined : await loadConfig(values.config);

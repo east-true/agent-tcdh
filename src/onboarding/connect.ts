@@ -43,7 +43,7 @@ function object(value: unknown): Record<string, unknown> {
 }
 
 /** Compare configuration values without treating parser-created null prototypes as a semantic change. */
-function sameValue(left: unknown, right: unknown): boolean {
+export function sameValue(left: unknown, right: unknown): boolean {
   /** Normalize tables recursively while preserving arrays, dates, and integer values. */
   function normalize(value: unknown): unknown {
     if (Array.isArray(value)) {
@@ -67,7 +67,7 @@ function toml(text: string): Record<string, unknown> {
 }
 
 /** Parse the selected client layout without exposing source values in diagnostics. */
-function connectionDocument(client: ConnectionClient, existing: string, name: string) {
+export function connectionDocument(client: ConnectionClient, existing: string, name: string) {
   if (client === "codex") {
     const root = toml(existing);
     return { root, servers: root.mcp_servers === undefined ? {} : object(root.mcp_servers),
@@ -106,15 +106,20 @@ function connectionDocument(client: ConnectionClient, existing: string, name: st
   return { root, servers, path, bom, text };
 }
 
+/** Validate an explicitly selected client server name before reading or editing configuration. */
+export function validateConnectionName(name: string): void {
+  if (!/^[a-zA-Z][a-zA-Z0-9_-]{0,63}$/u.test(name)) {
+    throw new Error("Connection names must start with a letter and contain only letters, digits, underscores, or hyphens.");
+  }
+}
+
 /** Generate or merge a single hub entry while keeping unrelated settings intact. */
 export function mergeConnection(
   client: ConnectionClient, hub: string, tokenEnv?: string, existing = "", replace = false, name = "agent_tcdh",
 ): { content: string; notes: string[] } {
   // 1. Validate generated values and select the documented client-specific server format.
   connectionClientSchema.parse(client);
-  if (!/^[a-zA-Z][a-zA-Z0-9_-]{0,63}$/u.test(name)) {
-    throw new Error("Connection names must start with a letter and contain only letters, digits, underscores, or hyphens.");
-  }
+  validateConnectionName(name);
   if (tokenEnv !== undefined) {
     envNameSchema.parse(tokenEnv);
   }

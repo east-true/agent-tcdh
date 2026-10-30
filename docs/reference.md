@@ -10,6 +10,7 @@ This reference targets AgentTCDH `0.1.2`. See [guided setup](onboarding.md), inc
 agent-tcdh init [--yes] [--config FILE] [--hub URL] [--host HOST] [--port PORT] [--db FILE]
 agent-tcdh connect <CLIENT> [--print | --write FILE | --check FILE] [--dry-run] [--replace]
                      CLIENT: codex, opencode, opencode-v1, claude-code, gemini-cli, cursor, vscode
+agent-tcdh disconnect <CLIENT> --file FILE [--name NAME] [--apply | --dry-run] [--normalize]
 agent-tcdh doctor [--target ID | --all] [--hub URL]
                      [--q QUERY] [--protocol mcp|a2a] [--tag TAG] [--include-disabled]
                      [--limit COUNT] [--concurrency COUNT]
@@ -38,7 +39,7 @@ agent-tcdh registry import <JSON_FILE> [--on-conflict error|skip|replace] [--dry
 agent-tcdh mcp [--hub URL] [--no-config] [--anonymous | --token-env VARIABLE]
 ```
 
-The `--check FILE` connection mode is an unreleased source addition; published `0.1.2` does not support it. See [saved connection checks](connection-check.md) for results, exit codes, and comparison limits. Other commands below retain their `0.1.2` behavior.
+The `--check FILE` connection mode and `disconnect` command are unreleased source additions; published `0.1.2` does not support them. See [client disconnection](client-disconnection.md) for named removal previews, backups, and TOML normalization. See [saved connection checks](connection-check.md) for results, exit codes, and comparison limits. Other commands below retain their `0.1.2` behavior.
 
 The default command is `serve`. Existing administrative commands print JSON; setup, edit/state, and comparison commands show readable terminal summaries with JSON when redirected or requested using `--json`; failures print diagnostics to stderr and exit with code 1. `target check` also prints failed/skipped reports as JSON and uses the exit codes below. Use `--help` for all options.
 
