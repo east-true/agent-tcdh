@@ -2,6 +2,8 @@
 
 This feature is unreleased and requires a source checkout containing `config restore`. Published `0.1.2` does not include it.
 
+Use `node dist/index.js config backups --file ./config.toml` to find matching sibling backup metadata and restore preview commands. See [backup discovery](configuration-backups.md) for naming, ordering, and validation limits.
+
 Use the backup path returned by `connect`, `disconnect`, or setup replacement to preview a whole-file restoration:
 
 ```sh
