@@ -1,6 +1,6 @@
 # Find configuration backups
 
-This feature is unreleased and requires a source checkout containing `config backups`. Published `0.1.2` does not include it.
+Requires AgentTCDH `0.1.3` or a source checkout containing this command. Version `0.1.2` does not include it. See the [v0.1.3 release notes](releases/v0.1.3.md) for candidate installation and separate publication checks.
 
 List backups associated with an explicit configuration path:
 

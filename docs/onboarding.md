@@ -1,6 +1,6 @@
 # Guided setup, connection, and diagnostics
 
-Requires AgentTCDH `0.1.2` or later. From a source checkout, run `npm ci` and `npm run build`, then replace `agent-tcdh` below with `node dist/index.js`. See the [v0.1.2 release notes](releases/v0.1.2.md) for installation and publication checks. The default suite uses temporary files and local protocol fixtures; it does not modify personal agent configuration or run models.
+Core setup requires AgentTCDH `0.1.2` or later; saved-profile checks, disconnection, backup discovery, and restoration require `0.1.3`. From a source checkout, run `npm ci` and `npm run build`, then replace `agent-tcdh` below with `node dist/index.js`. See the [v0.1.2 release notes](releases/v0.1.2.md) for installation and publication checks. The default suite uses temporary files and local protocol fixtures; it does not modify personal agent configuration or run models.
 
 ## Initialize once
 
@@ -106,13 +106,13 @@ No personal configuration path is chosen or written automatically. `--write FILE
 
 JSONC edits preserve surrounding comments. Codex appends and managed-block updates preserve existing text where possible. Inline or unmanaged TOML layouts may require normalization with `--replace`; normalization can change formatting/comments, so the exact original is retained in the backup. Invalid syntax is rejected with a fixed diagnostic that does not echo existing secrets. Write results omit the full existing configuration; dry-run output shows only the new fragment and planned path.
 
-Source checkouts also provide an unreleased `connect --check FILE` command for read-only comparison of saved profiles. See [saved connection checks](connection-check.md); published `0.1.2` does not include this option.
+Version `0.1.3` adds `connect --check FILE` for read-only comparison of saved profiles. See [saved connection checks](connection-check.md); version `0.1.2` does not include this option.
 
-Source checkouts also support `disconnect CLIENT --file FILE` to preview removing a selected entry, with `--apply` for an actual edit and exact backup. See [client disconnection](client-disconnection.md) for TOML handling and named-entry selection.
+Version `0.1.3` also supports `disconnect CLIENT --file FILE` to preview removing a selected entry, with `--apply` for an actual edit and exact backup. See [client disconnection](client-disconnection.md) for TOML handling and named-entry selection.
 
-Source checkouts provide `config backups --file FILE` to find matching sibling backup metadata and restore preview commands. See [backup discovery](configuration-backups.md).
+Version `0.1.3` provides `config backups --file FILE` to find matching sibling backup metadata and restore preview commands. See [backup discovery](configuration-backups.md).
 
-To recover the entire file from a returned backup, source checkouts provide `config restore BACKUP_FILE --file FILE` with a preview by default and explicit `--apply`. See [configuration restoration](configuration-restore.md).
+To recover the entire file from a returned backup, version `0.1.3` provides `config restore BACKUP_FILE --file FILE` with a preview by default and explicit `--apply`. See [configuration restoration](configuration-restore.md).
 
 Reload the agent after applying settings. The normal `connect` result also includes a ready-to-use instruction: search capabilities with `search_targets`, retrieve current details with `get_target`, and connect directly using the client environment's protocol support, credentials, and permissions. Configuring hub discovery does not dynamically mount every registered target into the client's native tool catalog.
 
