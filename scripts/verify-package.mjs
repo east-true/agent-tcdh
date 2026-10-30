@@ -48,7 +48,7 @@ try {
   const [manifest] = manifests;
   assert.equal(manifest.name, "agent-tcdh");
   const files = new Set(manifest.files.map((entry) => entry.path));
-  for (const required of ["dist/index.js", "dist/version.js", "dist/onboarding/connect.js", "dist/onboarding/doctor.js", "dist/onboarding/doctor-batch.js", "docs/onboarding.md", "docs/client-connections.md", "dist/onboarding/import-config.js", "dist/onboarding/presets.js", "docs/config-import.md", "dist/app.js", "dist/a2a-http.js", "dist/targets/check.js", "dist/targets/edit.js", "dist/registry/diff.js", "docs/registry-comparison.md", "docs/target-management.md", "docs/agent-compatibility.md", "docs/agent-verification.md", "examples/a2a.json", "README.md", "LICENSE", "CONTRIBUTING.md", "SECURITY.md", "CHANGELOG.md"]) {
+  for (const required of ["dist/index.js", "dist/version.js", "dist/onboarding/connect.js", "dist/onboarding/doctor.js", "dist/onboarding/doctor-batch.js", "docs/onboarding.md", "docs/client-connections.md", "docs/connection-check.md", "dist/onboarding/import-config.js", "dist/onboarding/presets.js", "docs/config-import.md", "dist/app.js", "dist/a2a-http.js", "dist/targets/check.js", "dist/targets/edit.js", "dist/registry/diff.js", "docs/registry-comparison.md", "docs/target-management.md", "docs/agent-compatibility.md", "docs/agent-verification.md", "examples/a2a.json", "README.md", "LICENSE", "CONTRIBUTING.md", "SECURITY.md", "CHANGELOG.md"]) {
     assert.ok(files.has(required), "Required package file is missing: " + required);
   }
   for (const required of ["examples/local-demo.mjs", "examples/demo-targets.mjs", "docs/local-demo.md", "examples/public-docs-registry.json", "docs/public-mcp-verification.md", "docs/selection-verification.md", "docs/model-target-verification.md", "docs/platform-compatibility.md", "docs/reference.md"]) {
@@ -94,6 +94,10 @@ try {
   const connected = await runCommand(executable, [...prefix, "connect", "opencode", "--write", consumerConfig], { cwd: installation, env: environment });
   assert.equal(JSON.parse(connected.stdout).changed, true);
   assert.ok((await readFile(consumerConfig, "utf8")).includes("AGENT_TCDH_READ_TOKEN"));
+  // Check the installed profile before starting the hub, proving configuration checks stay offline.
+  const connectionCheck = await runCommand(executable, [...prefix, "connect", "opencode", "--check", consumerConfig], { cwd: installation, env: environment });
+  assert.equal(JSON.parse(connectionCheck.stdout).reason, "matched");
+  assert.equal(JSON.parse(connectionCheck.stdout).executionVerified, false);
   const codex = await runCommand(executable, [...prefix, "connect", "codex", "--print"], { cwd: installation, env: environment });
   assert.ok(codex.stdout.includes("bearer_token_env_var"));
   assert.ok(!codex.stdout.includes(credentials.readToken));

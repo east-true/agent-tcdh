@@ -1,5 +1,6 @@
 import { access } from "node:fs/promises";
 import { fileURLToPath } from "node:url";
+import { resolve } from "node:path";
 import { isDeepStrictEqual } from "node:util";
 import { parse as parseToml, stringify as stringifyToml } from "smol-toml";
 import { applyEdits, modify, parse as parseJsonc, type ParseError } from "jsonc-parser";
@@ -65,6 +66,46 @@ function toml(text: string): Record<string, unknown> {
   }
 }
 
+/** Parse the selected client layout without exposing source values in diagnostics. */
+function connectionDocument(client: ConnectionClient, existing: string, name: string) {
+  if (client === "codex") {
+    const root = toml(existing);
+    return { root, servers: root.mcp_servers === undefined ? {} : object(root.mcp_servers),
+      path: ["mcp_servers", name], bom: "", text: existing };
+  }
+  const errors: ParseError[] = [];
+  const bom = existing.startsWith("\uFEFF") ? "\uFEFF" : "";
+  const text = (existing.trim() ? existing : "{}\n").replace(/^\uFEFF/u, "");
+  const parsed = parseJsonc(text, errors, { allowTrailingComma: true });
+  if (errors.length > 0) {
+    throw new Error("Invalid JSON/JSONC configuration. Fix it before using the hub configuration.");
+  }
+  const root = object(parsed);
+  let servers: Record<string, unknown>;
+  let path: string[];
+  if (client === "opencode" || client === "opencode-v1") {
+    const mcp = root.mcp === undefined ? {} : object(root.mcp);
+    if (client === "opencode" && Object.entries(mcp).some(([key, value]) => key !== "servers"
+      && value && typeof value === "object" && "type" in value)) {
+      throw new Error("This file uses OpenCode v1 server layout. Select opencode-v1 or migrate it first.");
+    }
+    if (client === "opencode-v1" && mcp.servers !== undefined && !["remote", "local"].includes(String(object(mcp.servers).type))) {
+      throw new Error("This file uses OpenCode v2 server layout. Select opencode.");
+    }
+    servers = client === "opencode" ? (mcp.servers === undefined ? {} : object(mcp.servers)) : mcp;
+    path = client === "opencode" ? ["mcp", "servers", name] : ["mcp", name];
+  } else {
+    const key = client === "vscode" ? "servers" : "mcpServers";
+    const alternate = client === "vscode" ? "mcpServers" : "servers";
+    if (root[key] === undefined && root[alternate] !== undefined) {
+      throw new Error("This file uses a different MCP server container. Select the matching client profile or choose another file.");
+    }
+    servers = root[key] === undefined ? {} : object(root[key]);
+    path = [key, name];
+  }
+  return { root, servers, path, bom, text };
+}
+
 /** Generate or merge a single hub entry while keeping unrelated settings intact. */
 export function mergeConnection(
   client: ConnectionClient, hub: string, tokenEnv?: string, existing = "", replace = false, name = "agent_tcdh",
@@ -123,38 +164,14 @@ export function mergeConnection(
   }
 
   // 3. Edit JSONC at the exact server path, preserving comments, the BOM, and neighboring settings.
-  const errors: ParseError[] = [];
-  const bom = existing.startsWith("\uFEFF") ? "\uFEFF" : "";
-  const text = (existing.trim() ? existing : "{}\n").replace(/^\uFEFF/u, "");
-  const root = object(parseJsonc(text, errors, { allowTrailingComma: true }));
-  if (errors.length > 0) {
-    throw new Error("Invalid JSON/JSONC configuration. Fix it before adding the hub.");
+  const { root, servers, path, bom, text } = connectionDocument(client, existing, name);
+  const expected = structuredClone(root);
+  let parent = expected;
+  for (const key of path.slice(0, -1)) {
+    parent[key] ??= {};
+    parent = object(parent[key]);
   }
-  let servers: Record<string, unknown>;
-  let path: string[];
-  let expected: Record<string, unknown>;
-  if (client === "opencode" || client === "opencode-v1") {
-    const mcp = root.mcp === undefined ? {} : object(root.mcp);
-    if (client === "opencode" && Object.entries(mcp).some(([key, value]) => key !== "servers"
-      && value && typeof value === "object" && "type" in value)) {
-      throw new Error("This file uses OpenCode v1 server layout. Select opencode-v1 or migrate it first.");
-    }
-    if (client === "opencode-v1" && mcp.servers !== undefined && !["remote", "local"].includes(String(object(mcp.servers).type))) {
-      throw new Error("This file uses OpenCode v2 server layout. Select opencode.");
-    }
-    servers = client === "opencode" ? (mcp.servers === undefined ? {} : object(mcp.servers)) : mcp;
-    path = client === "opencode" ? ["mcp", "servers", name] : ["mcp", name];
-    expected = { ...root, mcp: client === "opencode" ? { ...mcp, servers: { ...servers, [name]: entry } } : { ...mcp, [name]: entry } };
-  } else {
-    const key = client === "vscode" ? "servers" : "mcpServers";
-    const alternate = client === "vscode" ? "mcpServers" : "servers";
-    if (root[key] === undefined && root[alternate] !== undefined) {
-      throw new Error("This file uses a different MCP server container. Select the matching client profile or choose another file.");
-    }
-    servers = root[key] === undefined ? {} : object(root[key]);
-    path = [key, name];
-    expected = { ...root, [key]: { ...servers, [name]: entry } };
-  }
+  parent[name] = entry;
   const previous = Object.hasOwn(servers, name) ? servers[name] : undefined;
   if (previous !== undefined && sameValue(previous, entry)) {
     return { content: bom + text, notes: [] };
@@ -195,5 +212,50 @@ export async function connectClient(options: {
     instructions: "Use AgentTCDH search_targets to find capabilities, then get_target to retrieve current connection details. "
       + "Connect directly to the selected MCP server or A2A agent using this client's protocol support, target credentials, and execution permissions. "
       + "The hub supplies metadata; native dynamic tool mounting depends on the client. Restart or reload the client after applying its configuration.",
+  };
+}
+
+/** Inspect a chosen client file against this installation's generated profile without writes or execution. */
+export async function checkConnection(options: {
+  client: string; hub: string; file: string; tokenEnv?: string | undefined; name?: string | undefined;
+}) {
+  // 1. Generate and validate the expected entry, then read only the explicitly selected client file.
+  if (!options.file.trim()) {
+    throw new Error("--check requires a non-empty client configuration file path.");
+  }
+  const client = connectionClientSchema.parse(options.client);
+  const name = options.name ?? "agent_tcdh";
+  const generated = mergeConnection(client, options.hub, options.tokenEnv, "", false, name).content;
+  const expected = connectionDocument(client, generated, name).servers[name];
+  const existing = await readConfigText(options.file);
+  const document = existing === undefined ? undefined : connectionDocument(client, existing, name);
+  const present = document !== undefined && Object.hasOwn(document.servers, name);
+  const actual = present ? document!.servers[name] : undefined;
+
+  // 2. Report only known field names; never copy source settings, arbitrary keys, or credential values.
+  const known = ["url", "bearer_token_env_var", "type", "command", "args", "env", "headers", "oauth"];
+  let differingFields: string[] = [];
+  if (present && !sameValue(actual, expected)) {
+    if (!actual || typeof actual !== "object" || Array.isArray(actual)) {
+      differingFields = ["entry"];
+    } else {
+      const actualEntry = actual as Record<string, unknown>;
+      const expectedEntry = expected as Record<string, unknown>;
+      differingFields = known.filter((key) => !sameValue(actualEntry[key], expectedEntry[key]));
+      if (Object.keys(actualEntry).some((key) => !known.includes(key))) {
+        differingFields.push("additional-settings");
+      }
+    }
+  }
+  const reason = existing === undefined ? "file-missing" : !present ? "entry-missing"
+    : sameValue(actual, expected) ? "matched" : "settings-differ";
+  return { client, hub: normalizeHub(options.hub), name, path: resolve(options.file),
+    status: reason === "matched" ? "passed" : "failed", reason, differingFields,
+    changed: false, executionVerified: false, transport: usesBridge(client) ? "stdio" : "streamable-http",
+    requiredEnvironmentVariables: options.tokenEnv ? [options.tokenEnv] : [],
+    action: reason === "matched" ? "Configuration matches the generated profile. Reload the client if it has not loaded these settings."
+      : reason === "settings-differ" ? "Review connect --print and connect --write FILE --dry-run --replace before updating this named entry."
+        : "Review connect --write FILE --dry-run, then use --write FILE to add the named hub entry.",
+    scope: "Local configuration comparison only. Client loading, credential values, hub access, and target execution were not verified.",
   };
 }

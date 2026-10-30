@@ -13,7 +13,7 @@ const help = `AgentTCDH — Agent & Tool Capability Discovery Hub
 
 Usage:
   agent-tcdh init [--yes] [--config FILE] [--hub URL] [--host HOST] [--port PORT] [--db FILE]
-  agent-tcdh connect <CLIENT> [--print | --write FILE] [--dry-run] [--replace]
+  agent-tcdh connect <CLIENT> [--print | --write FILE | --check FILE] [--dry-run] [--replace]
                        CLIENT: codex, opencode, opencode-v1, claude-code, gemini-cli, cursor, vscode
   agent-tcdh doctor [--target ID | --all] [--hub URL]
                        [--q QUERY] [--protocol mcp|a2a] [--tag TAG] [--include-disabled]
@@ -70,6 +70,7 @@ Options:
   --force               Replace setup configuration with an exact backup
   --read-token-env NAME  Record the read credential environment name during setup
   --print               Print only the generated client configuration fragment
+  --check FILE          Check a saved client profile without writes or network calls
   --write FILE          Merge the hub into this explicit client file, preserving a backup
   --replace             Replace a conflicting named hub entry in a client configuration
   --all                 Inspect all matching targets during doctor (default limit: 100)
@@ -121,6 +122,7 @@ export async function runCli(args: string[]): Promise<void> {
       "read-token-env": { type: "string" },
       print: { type: "boolean" },
       write: { type: "string" },
+      check: { type: "string" },
       replace: { type: "boolean" },
       target: { type: "string" },
       all: { type: "boolean" },
@@ -185,7 +187,20 @@ export async function runCli(args: string[]): Promise<void> {
 
   // 3. Generate consumer settings and run read-only diagnostics before requiring administration credentials.
   if (command === "connect") {
-    validateArguments(positionals, 2, values, ["hub", "print", "write", "dry-run", "replace", "name"]);
+    validateArguments(positionals, 2, values, ["hub", "print", "write", "check", "dry-run", "replace", "name"]);
+    if (values.check !== undefined && (values.print || values.write !== undefined || values["dry-run"] || values.replace)) {
+      throw new Error("Use --check FILE alone with optional --hub, --token-env, --name, --config, or --json.");
+    }
+    if (values.check !== undefined) {
+      const { checkConnection } = await import("./onboarding/connect.js");
+      const result = await checkConnection({ client: positionals[1]!, hub, file: values.check,
+        tokenEnv: values["token-env"] ?? consumerTokenEnv(config), name: values.name });
+      printOnboarding(result, values.json, () => result.status.toUpperCase() + " " + result.reason + ": " + JSON.stringify(result.path)
+        + (result.differingFields.length ? "\nDiffering fields: " + result.differingFields.join(", ") : "")
+        + "\n" + result.action + "\n" + result.scope);
+      process.exitCode = result.status === "passed" ? 0 : 1;
+      return;
+    }
     if (values.print && values.write || values.print && values.json || (values["dry-run"] || values.replace) && !values.write) {
       throw new Error("Use --print alone, or --write FILE with optional --dry-run. --print cannot be combined with --json.");
     }

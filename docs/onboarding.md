@@ -106,6 +106,8 @@ No personal configuration path is chosen or written automatically. `--write FILE
 
 JSONC edits preserve surrounding comments. Codex appends and managed-block updates preserve existing text where possible. Inline or unmanaged TOML layouts may require normalization with `--replace`; normalization can change formatting/comments, so the exact original is retained in the backup. Invalid syntax is rejected with a fixed diagnostic that does not echo existing secrets. Write results omit the full existing configuration; dry-run output shows only the new fragment and planned path.
 
+Source checkouts also provide an unreleased `connect --check FILE` command for read-only comparison of saved profiles. See [saved connection checks](connection-check.md); published `0.1.2` does not include this option.
+
 Reload the agent after applying settings. The normal `connect` result also includes a ready-to-use instruction: search capabilities with `search_targets`, retrieve current details with `get_target`, and connect directly using the client environment's protocol support, credentials, and permissions. Configuring hub discovery does not dynamically mount every registered target into the client's native tool catalog.
 
 Configuration formats were checked against [Codex MCP documentation](https://learn.chatgpt.com/docs/extend/mcp), [OpenCode v2 MCP documentation](https://opencode.ai/v2/docs/mcp-servers/), and [OpenCode v1 documentation](https://opencode.ai/docs/en/mcp-servers/) on 2026-10-29. Templates and merging are tested with local fixtures; these checks do not claim new model-driven agent executions.

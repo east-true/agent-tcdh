@@ -8,7 +8,7 @@ This reference targets AgentTCDH `0.1.2`. See [guided setup](onboarding.md), inc
 
 ```text
 agent-tcdh init [--yes] [--config FILE] [--hub URL] [--host HOST] [--port PORT] [--db FILE]
-agent-tcdh connect <CLIENT> [--print | --write FILE] [--dry-run] [--replace]
+agent-tcdh connect <CLIENT> [--print | --write FILE | --check FILE] [--dry-run] [--replace]
                      CLIENT: codex, opencode, opencode-v1, claude-code, gemini-cli, cursor, vscode
 agent-tcdh doctor [--target ID | --all] [--hub URL]
                      [--q QUERY] [--protocol mcp|a2a] [--tag TAG] [--include-disabled]
@@ -37,6 +37,8 @@ agent-tcdh registry export <JSON_FILE> [--overwrite] [--hub URL]
 agent-tcdh registry import <JSON_FILE> [--on-conflict error|skip|replace] [--dry-run] [--hub URL]
 agent-tcdh mcp [--hub URL] [--no-config] [--anonymous | --token-env VARIABLE]
 ```
+
+The `--check FILE` connection mode is an unreleased source addition; published `0.1.2` does not support it. See [saved connection checks](connection-check.md) for results, exit codes, and comparison limits. Other commands below retain their `0.1.2` behavior.
 
 The default command is `serve`. Existing administrative commands print JSON; setup, edit/state, and comparison commands show readable terminal summaries with JSON when redirected or requested using `--json`; failures print diagnostics to stderr and exit with code 1. `target check` also prints failed/skipped reports as JSON and uses the exit codes below. Use `--help` for all options.
 
