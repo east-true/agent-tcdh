@@ -128,6 +128,10 @@ Edit labels/tags or enable/disable registrations without rewriting JSON files. U
 
 Use `registry diff snapshot.json` or an import preview with `--compare` to review added, changed, unchanged, and retained definitions against the hub. Comparison is read-only; see [registry comparison](docs/registry-comparison.md) for conflict policies and consistency limits.
 
+## Unreleased improvements
+
+Source checkouts additionally support `connect --check FILE` to inspect saved client profiles without changing files or contacting the hub. It reports missing entries and differences in hub addresses, credential references, and local bridge paths across all seven profiles. See [connection checks](docs/connection-check.md) for result codes and verification scope. This command is not included in the published `0.1.2` package.
+
 ## MCP discovery
 
 Connect your MCP client to `http://127.0.0.1:3000/mcp`.

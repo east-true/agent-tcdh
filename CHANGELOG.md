@@ -2,7 +2,7 @@
 
 ## Unreleased
 
-No changes yet.
+- Add read-only `connect --check FILE` across all seven client profiles, with missing/drift results, redacted field differences, and diagnostic exit codes.
 
 ## 0.1.2 — 2026-10-30
 
