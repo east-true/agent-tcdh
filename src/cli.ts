@@ -16,6 +16,7 @@ Usage:
   agent-tcdh connect <CLIENT> [--print | --write FILE | --check FILE] [--dry-run] [--replace]
                        CLIENT: codex, opencode, opencode-v1, claude-code, gemini-cli, cursor, vscode
   agent-tcdh disconnect <CLIENT> --file FILE [--name NAME] [--apply | --dry-run] [--normalize]
+  agent-tcdh config backups --file FILE [--limit COUNT]
   agent-tcdh config restore <BACKUP_FILE> --file FILE [--apply | --dry-run]
   agent-tcdh doctor [--target ID | --all] [--hub URL]
                        [--q QUERY] [--protocol mcp|a2a] [--tag TAG] [--include-disabled]
@@ -73,12 +74,13 @@ Options:
   --read-token-env NAME  Record the read credential environment name during setup
   --print               Print only the generated client configuration fragment
   --check FILE          Check a saved client profile without writes or network calls
-  --file FILE           Select the destination for disconnect or config restore
+  --file FILE           Select the destination for disconnect or config management
   --normalize           Allow TOML normalization during disconnect, with an exact backup
   --write FILE          Merge the hub into this explicit client file, preserving a backup
   --replace             Replace a conflicting named hub entry in a client configuration
   --all                 Inspect all matching targets during doctor (default limit: 100)
   --concurrency COUNT   Parallel doctor inspections, 1–8 (default: 3)
+  --limit COUNT         Result limit; config backups defaults to 20, maximum 100
   --target ID           Inspect this target's metadata and local prerequisites during doctor
   --command COMMAND     Register a local MCP stdio command without executing it
   --arg ARG             Repeat for each literal stdio argument; use --arg=--flag for flags
@@ -204,6 +206,16 @@ export async function runCli(args: string[]): Promise<void> {
     return;
   }
   if (command === "config") {
+    if (positionals[1] === "backups") {
+      validateArguments(positionals, 2, values, ["file", "limit"]);
+      if (values.config !== undefined || values.file === undefined) {
+        throw new Error("Use config backups --file FILE with optional --limit and --json. Setup defaults are not used.");
+      }
+      const { listConfigBackups, formatBackupList } = await import("./onboarding/backups.js");
+      const result = await listConfigBackups({ file: values.file, limit: values.limit === undefined ? undefined : Number(values.limit) });
+      printOnboarding(result, values.json, () => formatBackupList(result));
+      return;
+    }
     if (positionals[1] !== "restore") {
       throw new Error("Unknown configuration command. Run --help for usage.");
     }

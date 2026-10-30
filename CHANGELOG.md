@@ -2,8 +2,9 @@
 
 ## Unreleased
 
-- Add offline whole-file configuration restoration with previews, exact recovery from selected backups, and backups of replaced destination files.
+- Add bounded, read-only configuration backup listings with modification-time ordering, metadata status, and installation-specific restore preview commands.
 
+- Add offline whole-file configuration restoration with previews, exact recovery from selected backups, and backups of replaced destination files.
 - Add offline `disconnect` previews and explicit named-entry removal for all seven clients, with exact backups, no-ops, and opt-in TOML normalization.
 - Add read-only `connect --check FILE` across all seven client profiles, with missing/drift results, redacted field differences, and diagnostic exit codes.
 

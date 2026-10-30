@@ -110,6 +110,8 @@ Source checkouts also provide an unreleased `connect --check FILE` command for r
 
 Source checkouts also support `disconnect CLIENT --file FILE` to preview removing a selected entry, with `--apply` for an actual edit and exact backup. See [client disconnection](client-disconnection.md) for TOML handling and named-entry selection.
 
+Source checkouts provide `config backups --file FILE` to find matching sibling backup metadata and restore preview commands. See [backup discovery](configuration-backups.md).
+
 To recover the entire file from a returned backup, source checkouts provide `config restore BACKUP_FILE --file FILE` with a preview by default and explicit `--apply`. See [configuration restoration](configuration-restore.md).
 
 Reload the agent after applying settings. The normal `connect` result also includes a ready-to-use instruction: search capabilities with `search_targets`, retrieve current details with `get_target`, and connect directly using the client environment's protocol support, credentials, and permissions. Configuring hub discovery does not dynamically mount every registered target into the client's native tool catalog.

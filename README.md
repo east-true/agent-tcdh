@@ -134,6 +134,7 @@ Source checkouts include these additions, which are not in the published `0.1.2`
 
 - `connect --check FILE` compares a saved profile with the expected hub address, credential references, and bridge paths. See [connection checks](docs/connection-check.md).
 - `disconnect CLIENT --file FILE` previews named-entry removal; `--apply` writes it with an exact backup. See [client disconnection](docs/client-disconnection.md).
+- `config backups --file FILE` lists matching backup metadata by modification time and provides restore preview commands. See [backup discovery](docs/configuration-backups.md).
 - `config restore BACKUP_FILE --file FILE` previews whole-file recovery; `--apply` restores it and backs up the current file. See [configuration restoration](docs/configuration-restore.md).
 
 ## MCP discovery
