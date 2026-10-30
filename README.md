@@ -33,10 +33,10 @@ The consumer owns target selection, protocol clients, credentials, and execution
 
 ## Quickstart
 
-Use **Node.js 24 or newer** and npm. Install the published release:
+Use **Node.js 24 or newer** and npm. Install the current npm release:
 
 ```sh
-npm install --global agent-tcdh@0.1.2
+npm install --global agent-tcdh
 agent-tcdh init
 agent-tcdh serve
 ```
@@ -44,7 +44,7 @@ agent-tcdh serve
 For a hub without global installation:
 
 ```sh
-npx --yes agent-tcdh@0.1.2 serve
+npx --yes agent-tcdh serve
 ```
 
 To run the isolated demo from source:
@@ -56,7 +56,7 @@ npm ci
 npm run demo
 ```
 
-The [v0.1.2 GitHub release](https://github.com/jiind/agent-tcdh/releases/tag/v0.1.2) provides the built tarball, source manifest, and checksums. See the [release notes](docs/releases/v0.1.2.md) for features and verification scope. Source commands below use the repository checkout; an installed CLI uses `agent-tcdh` in place of `npm run cli --` or `node dist/index.js`.
+Published [GitHub releases](https://github.com/jiind/agent-tcdh/releases) provide built tarballs, source manifests, and checksums. See the [v0.1.3 release notes](docs/releases/v0.1.3.md) for current source features, verification scope, and separate publication checks. Source commands below use the repository checkout; an installed CLI uses `agent-tcdh` in place of `npm run cli --` or `node dist/index.js`.
 
 The demo starts an isolated hub, registers three local targets, discovers them, and calls HTTP MCP, stdio MCP, and A2A targets directly. It checks execution receipts and cleans up. No account, API key, external service, or model is needed.
 
@@ -89,7 +89,7 @@ These are working examples, not a provider allowlist. Register other MCP servers
 
 ## Guided setup in v0.1.2
 
-Version `0.1.2` adds guided setup, file-free registration, seven connection profiles, configuration import, presets, diagnostics, target editing, and registry comparison. Use the published `0.1.2` package or this source checkout; earlier `0.1.1` installations do not include these commands.
+Version `0.1.2` adds guided setup, file-free registration, seven connection profiles, configuration import, presets, diagnostics, target editing, and registry comparison. Use the current npm package or this source checkout; earlier `0.1.1` installations do not include these commands.
 
 ```sh
 npm run build
