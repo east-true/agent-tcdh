@@ -164,3 +164,7 @@ Use `target edit` for labels/tags, `target enable`/`disable` for discovery state
 New setup/connection/diagnostic commands show readable summaries in a terminal. `target list` shows a compact table in a terminal. Piped output remains JSON, and `--json` explicitly requests JSON. Existing registration/get/update/remove and snapshot JSON shapes remain unchanged.
 
 `connect --print` is the deliberate exception: it emits only a TOML/JSON configuration fragment, including when piped. Do not combine it with `--write` or `--json`. `--dry-run` for connection requires an explicit `--write FILE` to preview.
+
+## Refresh matching remote registrations
+
+Source checkouts support unreleased `target refresh --all` previews and explicit `--apply` to save changed metadata. It uses the same bounded discovery selection as `doctor --all`, preserves managed labels/state, and reports per-target skips/failures. See [batch metadata refresh](batch-refresh.md); published `0.1.3` does not include this mode.

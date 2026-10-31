@@ -31,6 +31,8 @@ Usage:
   agent-tcdh target update <ID> <JSON_FILE> [--if-match ETAG] [--hub URL]
   agent-tcdh target import <URL> --id ID --protocol mcp|a2a [--dry-run] [--hub URL]
   agent-tcdh target refresh <ID> [--dry-run] [--hub URL]
+  agent-tcdh target refresh --all [--apply | --dry-run] [--q QUERY] [--protocol mcp|a2a] [--tag TAG]
+                       [--include-disabled] [--limit COUNT] [--concurrency COUNT] [--hub URL]
   agent-tcdh target check <ID> [--bearer-env VARIABLE] [--hub URL]
   agent-tcdh target get <ID> [--with-version] [--hub URL]
   agent-tcdh target list [--q QUERY] [--protocol mcp|a2a] [--tag TAG]
@@ -60,7 +62,7 @@ Options:
   --help, -h            Show usage
   --compare             Compare a config/preset preview with current hub metadata (read-only)
   --details             Include full definitions and print JSON comparison output
-  --apply               Apply an import, disconnection, or config restore; previews are the default
+  --apply               Apply an import, batch refresh, disconnection, or config restore; previews are the default
   --format FORMAT       Client config format: auto, codex, opencode, opencode-v1, mcp-json
   --select NAME         Repeat to select source server names or preset target ids
   --prefix PREFIX       Namespace imported target ids
@@ -78,8 +80,8 @@ Options:
   --normalize           Allow TOML normalization during disconnect, with an exact backup
   --write FILE          Merge the hub into this explicit client file, preserving a backup
   --replace             Replace a conflicting named hub entry in a client configuration
-  --all                 Inspect all matching targets during doctor (default limit: 100)
-  --concurrency COUNT   Parallel doctor inspections, 1–8 (default: 3)
+  --all                 Select all matching targets for doctor or refresh (default limit: 100)
+  --concurrency COUNT   Parallel doctor/refresh inspections, 1–8 (default: 3)
   --limit COUNT         Result limit; config backups defaults to 20, maximum 100
   --target ID           Inspect this target's metadata and local prerequisites during doctor
   --command COMMAND     Register a local MCP stdio command without executing it
@@ -320,6 +322,7 @@ export async function runCli(args: string[]): Promise<void> {
   const readCommand = command === "registry" && (positionals[1] === "diff" || positionals[1] === "import-config" && values.compare)
     || command === "preset" && ["show", "import"].includes(positionals[1] ?? "") && values.compare
     || command === "mcp" || command === "target" && (["list", "get", "check"].includes(positionals[1] ?? "")
+    || positionals[1] === "refresh" && values.all && !values.apply
     || ["refresh", "edit", "enable", "disable", "remove"].includes(positionals[1] ?? "") && values["dry-run"]);
   if (!readCommand && !metadataPreview && !values["token-env"] && config?.readTokenEnv && !config.tokenEnv && !process.env.AGENT_TCDH_TOKEN) {
     throw new Error("This setup has only read credentials. Select an administrator credential with --token-env for mutations.");
@@ -443,6 +446,27 @@ export async function runCli(args: string[]): Promise<void> {
     return;
   }
   if (action === "refresh") {
+    if (values.all) {
+      validateArguments(positionals, 2, values, ["hub", "all", "apply", "dry-run", "q", "protocol", "tag", "include-disabled", "limit", "concurrency"]);
+      if (values.apply && values["dry-run"]) {
+        throw new Error("Choose either a batch preview or --apply, not both.");
+      }
+      const { batchTargetOptionsSchema } = await import("./targets/batch.js");
+      const options = batchTargetOptionsSchema.parse({ q: values.q, protocol: values.protocol, tag: values.tag,
+        includeDisabled: values["include-disabled"], limit: values.limit === undefined ? undefined : Number(values.limit),
+        concurrency: values.concurrency === undefined ? undefined : Number(values.concurrency) });
+      const { refreshBatch } = await import("./targets/refresh-batch.js");
+      const report = await refreshBatch(client, options, Boolean(values.apply));
+      printOnboarding(report, values.json, () => "Batch refresh " + (report.dryRun ? "preview" : "application") + ": " + report.status.toUpperCase()
+        + "\n" + JSON.stringify(report.summary)
+        + (report.selectionIssue ? "\n" + report.selectionIssue.code + ": " + report.selectionIssue.message : "")
+        + "\n" + report.targets.map((target) => target.id + ": " + target.status + (target.fields.length ? " (" + target.fields.join(", ") + ")" : "")
+          + (target.issue ? "\n  " + target.issue.code + ": " + target.issue.message : "")).join("\n")
+        + "\n" + (report.dryRun ? "No registry writes. Use --apply to refresh changed targets." : "Updates are independent per target; review failed/skipped outcomes.")
+        + "\nTools and tasks were not executed.");
+      process.exitCode = report.status === "failed" ? 1 : 0;
+      return;
+    }
     validateArguments(positionals, 3, values, ["hub", "bearer-env", "dry-run", "a2a-binding", "a2a-version"]);
     const id = targetIdSchema.parse(positionals[2]);
     const { refreshDefinition } = await import("./remote-import.js");
