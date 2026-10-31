@@ -48,7 +48,7 @@ try {
   const [manifest] = manifests;
   assert.equal(manifest.name, "agent-tcdh");
   const files = new Set(manifest.files.map((entry) => entry.path));
-  for (const required of ["dist/index.js", "dist/version.js", "dist/onboarding/connect.js", "dist/onboarding/disconnect.js", "dist/onboarding/restore.js", "dist/onboarding/backups.js", "dist/onboarding/doctor.js", "dist/onboarding/doctor-batch.js", "docs/onboarding.md", "docs/client-connections.md", "docs/connection-check.md", "docs/client-disconnection.md", "docs/configuration-restore.md", "docs/configuration-backups.md", "dist/onboarding/import-config.js", "dist/onboarding/presets.js", "docs/config-import.md", "dist/app.js", "dist/a2a-http.js", "dist/targets/check.js", "dist/targets/edit.js", "dist/registry/diff.js", "docs/registry-comparison.md", "docs/target-management.md", "docs/agent-compatibility.md", "docs/agent-verification.md", "examples/a2a.json", "README.md", "LICENSE", "CONTRIBUTING.md", "SECURITY.md", "CHANGELOG.md"]) {
+  for (const required of ["dist/index.js", "dist/version.js", "dist/onboarding/connect.js", "dist/onboarding/disconnect.js", "dist/onboarding/restore.js", "dist/onboarding/backups.js", "dist/onboarding/doctor.js", "dist/onboarding/doctor-batch.js", "docs/onboarding.md", "docs/client-connections.md", "docs/connection-check.md", "docs/client-disconnection.md", "docs/configuration-restore.md", "docs/configuration-backups.md", "dist/onboarding/import-config.js", "dist/onboarding/presets.js", "docs/config-import.md", "dist/app.js", "dist/a2a-http.js", "dist/targets/check.js", "dist/targets/batch.js", "dist/targets/refresh-batch.js", "docs/batch-refresh.md", "dist/targets/edit.js", "dist/registry/diff.js", "docs/registry-comparison.md", "docs/target-management.md", "docs/agent-compatibility.md", "docs/agent-verification.md", "examples/a2a.json", "README.md", "LICENSE", "CONTRIBUTING.md", "SECURITY.md", "CHANGELOG.md"]) {
     assert.ok(files.has(required), "Required package file is missing: " + required);
   }
   for (const required of ["examples/local-demo.mjs", "examples/demo-targets.mjs", "docs/local-demo.md", "examples/public-docs-registry.json", "docs/public-mcp-verification.md", "docs/selection-verification.md", "docs/model-target-verification.md", "docs/platform-compatibility.md", "docs/reference.md"]) {
@@ -181,6 +181,25 @@ try {
   assert.ok(batchReport.batch.targets[0].targetVersion);
   assert.equal(batchReport.batch.targets[0].executionVerified, false);
 
+  // Verify actual metadata refresh through the installed CLI using only the isolated hub's MCP endpoint.
+  const refreshDefinitionPath = join(directory, "refresh-target.json");
+  await writeFile(refreshDefinitionPath, JSON.stringify({ id: "packaged-batch-refresh", name: "Packaged batch refresh",
+    description: "Local metadata refresh verification", protocol: "mcp", tags: ["package-batch-refresh"], capabilities: [],
+    connection: { transport: "streamable-http", url: url + "/mcp", auth: { type: "bearer", envVars: ["AGENT_TCDH_READ_TOKEN"] } } }), "utf8");
+  await runCommand(executable, [...prefix, "target", "add", refreshDefinitionPath], { cwd: installation, env: environment });
+  const batchRefreshArgs = [...prefix, "target", "refresh", "--all", "--tag", "package-batch-refresh"];
+  const refreshPreview = await runCommand(executable, batchRefreshArgs, { cwd: installation, env: environment });
+  assert.equal(JSON.parse(refreshPreview.stdout).summary.planned, 1);
+  assert.equal(JSON.parse(refreshPreview.stdout).summary.updated, 0);
+  const refreshApplied = await runCommand(executable, [...batchRefreshArgs, "--apply"], { cwd: installation, env: environment });
+  assert.equal(JSON.parse(refreshApplied.stdout).summary.updated, 1);
+  const afterRefresh = await runCommand(executable, [...prefix, "target", "get", "packaged-batch-refresh", "--with-version"], { cwd: installation, env: environment });
+  const unchangedRefresh = await runCommand(executable, [...batchRefreshArgs, "--apply"], { cwd: installation, env: environment });
+  assert.equal(JSON.parse(unchangedRefresh.stdout).summary.unchanged, 1);
+  const afterNoOp = await runCommand(executable, [...prefix, "target", "get", "packaged-batch-refresh", "--with-version"], { cwd: installation, env: environment });
+  assert.equal(JSON.parse(afterRefresh.stdout).etag, JSON.parse(afterNoOp.stdout).etag);
+  await runCommand(executable, [...prefix, "target", "remove", "packaged-batch-refresh"], { cwd: installation, env: environment });
+
   const bridge = new StdioClientTransport({ command: cursorSettings.command, args: cursorSettings.args, cwd: directory,
     env: { AGENT_TCDH_READ_TOKEN: credentials.readToken, AGENT_TCDH_CONFIG: join(directory, "missing-config.json") }, stderr: "pipe" });
   const bridgeClient = new Client({ name: "package-client-profile", version: "1.0.0" });
@@ -246,7 +265,7 @@ try {
   assert.ok(demoResult.executions.some((entry) => entry.transport === "stdio"));
   assert.equal(demoResult.remainingTargets.length, 2);
   console.log(JSON.stringify({ package: manifest.filename, isolatedProductionInstall: true,
-    installedBinary: true, onboarding: true, registryComparison: true, targetManagement: true, clientProfiles: true, clientDisconnection: true, configurationRestore: true, configurationBackups: true, batchDiagnostics: true, configImport: true, presets: true, documentation: true, targetDiagnostics: true, localDemo: true, initial, restarted, persistence: true }, null, 2));
+    installedBinary: true, onboarding: true, registryComparison: true, targetManagement: true, clientProfiles: true, clientDisconnection: true, configurationRestore: true, configurationBackups: true, batchDiagnostics: true, batchRefresh: true, configImport: true, presets: true, documentation: true, targetDiagnostics: true, localDemo: true, initial, restarted, persistence: true }, null, 2));
 } finally {
   // 7. Clean up only the processes and temporary files created by this run.
   try {

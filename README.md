@@ -137,6 +137,10 @@ Version `0.1.3` adds the following commands. Version `0.1.2` does not include th
 - `config backups --file FILE` lists matching backup metadata by modification time and provides restore preview commands. See [backup discovery](docs/configuration-backups.md).
 - `config restore BACKUP_FILE --file FILE` previews whole-file recovery; `--apply` restores it and backs up the current file. See [configuration restoration](docs/configuration-restore.md).
 
+## Unreleased improvements
+
+Source checkouts additionally support `target refresh --all` to preview remote metadata updates across selected registrations; `--apply` saves changed definitions with per-target version checks. Filters, selection limits, bounded concurrency, skipped targets, and independent failures are reported. See [batch metadata refresh](docs/batch-refresh.md). This mode is not in the published `0.1.3` package.
+
 ## MCP discovery
 
 Connect your MCP client to `http://127.0.0.1:3000/mcp`.

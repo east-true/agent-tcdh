@@ -26,6 +26,8 @@ agent-tcdh target enable|disable <ID> [--dry-run] [--if-match ETAG] [--hub URL]
 agent-tcdh target update <ID> <JSON_FILE> [--if-match ETAG] [--hub URL]
 agent-tcdh target import <URL> --id ID --protocol mcp|a2a [--dry-run] [--hub URL]
 agent-tcdh target refresh <ID> [--dry-run] [--hub URL]
+agent-tcdh target refresh --all [--apply | --dry-run] [--q QUERY] [--protocol mcp|a2a] [--tag TAG]
+                     [--include-disabled] [--limit COUNT] [--concurrency COUNT] [--hub URL]
 agent-tcdh target check <ID> [--bearer-env VARIABLE] [--hub URL]
 agent-tcdh target get <ID> [--with-version] [--hub URL]
 agent-tcdh target list [--q QUERY] [--protocol mcp|a2a] [--tag TAG]
@@ -42,6 +44,8 @@ agent-tcdh mcp [--hub URL] [--no-config] [--anonymous | --token-env VARIABLE]
 ```
 
 The `--check FILE` connection mode, `disconnect`, `config backups`, and `config restore` commands require `0.1.3`; version `0.1.2` does not support them. See [client disconnection](client-disconnection.md) for named removal previews, backups, and TOML normalization, [backup discovery](configuration-backups.md) for metadata listings, and [configuration restoration](configuration-restore.md) for whole-file recovery. See [saved connection checks](connection-check.md) for results, exit codes, and comparison limits. Other commands below retain their `0.1.2` behavior.
+
+The batch `target refresh --all` mode is an unreleased source addition and is not included in `0.1.3`. See [batch metadata refresh](batch-refresh.md) for previews, independent conditional writes, and partial outcomes.
 
 The default command is `serve`. Existing administrative commands print JSON; setup, edit/state, and comparison commands show readable terminal summaries with JSON when redirected or requested using `--json`; failures print diagnostics to stderr and exit with code 1. `target check` also prints failed/skipped reports as JSON and uses the exit codes below. Use `--help` for all options.
 

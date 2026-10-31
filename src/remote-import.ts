@@ -210,6 +210,7 @@ export async function refreshDefinition(
   id: string,
   bearerEnv?: string,
   selection: A2aSelection = {},
+  environment: NodeJS.ProcessEnv = process.env,
 ): Promise<RefreshProposal> {
   // 1. Read the registered metadata URL and authentication references.
   const original = (await client.getVersioned(id)).target;
@@ -220,17 +221,17 @@ export async function refreshDefinition(
   if (!bearerEnv && auth?.type === "bearer" && auth.envVars.length > 1) {
     throw new Error("Select the credential environment variable using --bearer-env.");
   }
-  const environment = bearerEnv ?? (auth?.type === "bearer" ? auth.envVars[0] : undefined);
+  const credentialEnv = bearerEnv ?? (auth?.type === "bearer" ? auth.envVars[0] : undefined);
   const inspected = await inspectRemote(remoteImportSchema.parse({
     id: original.id,
     protocol: original.protocol,
     url: original.protocol === "a2a"
       ? original.connection.agentCardUrl ?? original.connection.url : original.connection.url,
     transport: original.protocol === "mcp" ? original.connection.transport : undefined,
-    bearerEnv: environment,
+    bearerEnv: credentialEnv,
     a2aBinding: selection.protocolBinding ?? (original.protocol === "a2a" ? original.connection.protocolBinding : undefined),
     a2aVersion: selection.protocolVersion ?? (original.protocol === "a2a" ? original.connection.protocolVersion : undefined),
-  }));
+  }), environment);
 
   // 2. Reread administrator changes and stop if the connection changed.
   const current: VersionedTarget = await client.getVersioned(id);

@@ -2,7 +2,7 @@
 
 ## Unreleased
 
-No changes yet.
+- Add preview-first batch metadata refresh with filtered bounded selection, per-target credentials, conditional updates, no-op preservation, and independent outcomes.
 
 ## 0.1.3 — 2026-10-30
 
